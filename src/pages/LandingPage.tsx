@@ -13,8 +13,8 @@ const LandingMainLazy = lazy(() =>
 	})),
 );
 
-/** Offset for sticky sub-nav + safe top padding when scrolling to section anchors. */
-const NAV_SCROLL_OFFSET = -56;
+/** Offset for sticky sub-nav + safe top padding when scrolling to section anchors (taller on small screens when nav wraps). */
+const NAV_SCROLL_OFFSET = -72;
 
 function LandingMainFallback() {
 	return (
@@ -133,7 +133,7 @@ export default function LandingPage() {
 
 	return (
 		<div
-			className={`bg-bg text-ink min-h-screen selection:bg-accent selection:text-bg ${reduceMotion ? "" : "cursor-none"}`}
+			className={`bg-bg text-ink min-h-dvh-screen selection:bg-accent selection:text-bg ${reduceMotion ? "" : "cursor-none"}`}
 		>
 			{!reduceMotion ? <CustomCursor /> : null}
 			<a href="#main-content" className="skip-link" onClick={handleSkipToMain}>

@@ -72,10 +72,10 @@ export default function ContactSection() {
 	return (
 		<section
 			id="section-contact"
-			className="w-full scroll-mt-14 border-t border-border bg-bg py-32 text-ink md:py-40"
+			className="w-full scroll-mt-20 border-t border-border bg-bg py-32 text-ink md:scroll-mt-14 md:py-40"
 			aria-labelledby="contact-section-title"
 		>
-			<div className="mx-auto max-w-7xl px-6">
+			<div className="mx-auto max-w-7xl px-4 sm:px-6">
 				<div
 					id={statusId}
 					aria-live="polite"

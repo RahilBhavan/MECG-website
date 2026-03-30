@@ -144,7 +144,7 @@ export default function HeroSection({ onScrollToImpact }: HeroSectionProps) {
 	return (
 		<section
 			ref={sectionRef}
-			className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden"
+			className="relative flex h-[100dvh] max-h-[100dvh] min-h-[100dvh] w-full flex-col items-center justify-center overflow-hidden"
 		>
 			{/* Warm center wash — static; WebGL (when loaded) sits above for motion users */}
 			<div
@@ -184,7 +184,7 @@ export default function HeroSection({ onScrollToImpact }: HeroSectionProps) {
 			<div className="pointer-events-none relative z-20 mx-auto h-full w-full max-w-7xl px-4 sm:px-6">
 				<PublicHeader />
 
-				<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-2 pt-16 text-center sm:px-0 sm:pt-0">
+				<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-3 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))] pt-60 text-center sm:px-0 sm:pb-0 sm:pt-0">
 					<h1
 						ref={h1Ref}
 						className="type-marketing-hero mb-6 leading-none drop-shadow-[0_2px_48px_rgba(0,0,0,0.85)]"
@@ -202,10 +202,10 @@ export default function HeroSection({ onScrollToImpact }: HeroSectionProps) {
 						MULTIFACETED. DRIVEN. INCLUSIVE.
 					</p>
 					{onScrollToImpact ? (
-						<div className="pointer-events-auto mt-10 flex flex-col items-center gap-3 sm:mt-12 sm:flex-row sm:justify-center">
+						<div className="pointer-events-auto mt-10 flex w-full max-w-md flex-col items-stretch gap-3 sm:mt-12 sm:max-w-none sm:flex-row sm:items-center sm:justify-center">
 							<Link
 								to="/signup"
-								className="btn-marketing-primary min-h-11 min-w-[12rem] px-8 text-center"
+								className="btn-marketing-primary min-h-12 px-8 text-center sm:min-h-11 sm:min-w-[12rem]"
 							>
 								Start your application
 							</Link>
@@ -214,7 +214,7 @@ export default function HeroSection({ onScrollToImpact }: HeroSectionProps) {
 								onClick={onScrollToImpact}
 								whileTap={reduceMotion ? undefined : { scale: 0.98 }}
 								transition={{ type: "spring", stiffness: 400, damping: 28 }}
-								className="text-technical text-muted hover:text-accent min-h-11 rounded-[var(--radius-marketing)] border border-border-strong bg-bg/55 px-6 py-3 backdrop-blur-sm transition-[color,box-shadow,border-color] duration-200 hover:border-accent/40 hover:shadow-[var(--shadow-marketing-md)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring cursor-pointer"
+								className="text-technical text-muted hover:text-accent min-h-12 rounded-[var(--radius-marketing)] border border-border-strong bg-bg/55 px-6 py-3 backdrop-blur-sm transition-[color,box-shadow,border-color] duration-200 hover:border-accent/40 hover:shadow-[var(--shadow-marketing-md)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring cursor-pointer sm:min-h-11"
 							>
 								Explore the firm
 							</motion.button>
@@ -225,7 +225,7 @@ export default function HeroSection({ onScrollToImpact }: HeroSectionProps) {
 				{onScrollToImpact && !reduceMotion ? (
 					<motion.div
 						aria-hidden
-						className="pointer-events-none fixed bottom-8 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center gap-1 text-accent/65"
+						className="pointer-events-none fixed bottom-[max(2rem,env(safe-area-inset-bottom,0px))] left-1/2 z-30 flex -translate-x-1/2 flex-col items-center gap-1 text-accent/65"
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 0.65 }}
 						transition={{ delay: 1.2, duration: 0.6 }}

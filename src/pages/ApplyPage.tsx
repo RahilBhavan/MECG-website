@@ -593,7 +593,7 @@ export default function ApplyPage() {
 			) : null}
 
 			{isEditable ? (
-				<div className="max-sm:pb-28 space-y-6">
+				<div className="max-sm:pb-[max(7rem,env(safe-area-inset-bottom,0px))] space-y-6">
 					<div className="sticky top-0 z-10 -mx-1 rounded-b-lg border border-t-0 border-border bg-bg/95 px-4 py-4 shadow-[0_12px_32px_-20px_rgba(0,0,0,0.5)] backdrop-blur-md supports-[backdrop-filter]:bg-bg/90 sm:-mx-0 sm:border-t sm:border-border">
 						<p className="text-technical text-muted mb-1" id="apply-step-label">
 							Step {activeStep + 1} of {STEPS.length}: {STEPS[activeStep]}

@@ -8,7 +8,7 @@ export default function PendingPage() {
 
 	if (roles.length > 0) {
 		return (
-			<div className="min-h-screen bg-bg text-ink flex flex-col items-center justify-center px-6 cursor-auto">
+			<div className="min-h-dvh-screen page-safe-insets flex cursor-auto flex-col items-center justify-center bg-bg text-ink">
 				<p className="text-technical text-muted mb-4">
 					You already have access.
 				</p>
@@ -20,7 +20,7 @@ export default function PendingPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-bg text-ink flex flex-col items-center justify-center px-6 cursor-auto max-w-lg mx-auto text-center space-y-6">
+		<div className="mx-auto flex max-w-lg cursor-auto flex-col items-center justify-center space-y-6 bg-bg text-center text-ink min-h-dvh-screen page-safe-insets">
 			<h1 className="type-auth-title">Access pending</h1>
 			<p className="text-technical text-muted">
 				Your account has no roles yet. If you just signed up, ensure the
@@ -30,7 +30,7 @@ export default function PendingPage() {
 			<button
 				type="button"
 				onClick={() => void signOut()}
-				className="border border-accent px-6 py-3 text-technical text-accent hover:bg-accent hover:text-bg"
+				className="min-h-12 border border-accent px-6 py-3 text-technical text-accent hover:bg-accent hover:text-bg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 			>
 				Sign out
 			</button>

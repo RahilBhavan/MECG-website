@@ -118,9 +118,9 @@ export default function ImpactSection() {
 			ref={sectionRef}
 			id="section-impact"
 			aria-labelledby="impact-section-heading"
-			className="w-full scroll-mt-14 border-t border-border bg-bg py-24 text-ink md:py-28"
+			className="w-full scroll-mt-20 border-t border-border bg-bg py-24 text-ink md:scroll-mt-14 md:py-28"
 		>
-			<div className="mx-auto max-w-7xl px-6">
+			<div className="mx-auto max-w-7xl px-4 sm:px-6">
 				<div className="animate-up mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 					<h2
 						id="impact-section-heading"
@@ -146,7 +146,7 @@ export default function ImpactSection() {
 				<h3 id="impact-case-studies-heading" className="sr-only">
 					{COHORT_LABEL} client case studies
 				</h3>
-				<div className="mx-auto mb-3 flex max-w-7xl justify-end gap-2 px-6">
+				<div className="mx-auto mb-3 flex max-w-7xl justify-end gap-2 px-4 sm:px-6">
 					<button
 						type="button"
 						className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded border border-border text-technical text-muted transition-colors hover:border-[var(--color-marketing-cta)]/50 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
@@ -179,7 +179,7 @@ export default function ImpactSection() {
 					<div
 						ref={scrollerRef}
 						id="impact-case-scroll"
-						className="impact-case-scroll flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-6 px-6 pb-6 pt-1 [scrollbar-color:var(--color-border)_transparent] [scrollbar-width:thin]"
+						className="impact-case-scroll flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-4 px-4 pb-6 pt-1 [scrollbar-color:var(--color-border)_transparent] [scrollbar-width:thin] sm:scroll-px-6 sm:px-6"
 					>
 						{WINTER_2026_CASE_STUDIES.map((project, index) => (
 							<article
@@ -222,7 +222,7 @@ export default function ImpactSection() {
 				</div>
 			</section>
 
-			<div className="mx-auto mt-24 max-w-7xl px-6 md:mt-28">
+			<div className="mx-auto mt-24 max-w-7xl px-4 sm:px-6 md:mt-28">
 				{/* Strategic Foundations (Pillars) */}
 				<div className="animate-up">
 					<h3 className="type-marketing-section mb-16 uppercase tracking-tight">

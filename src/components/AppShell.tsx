@@ -80,7 +80,7 @@ export default function AppShell() {
 
 	return (
 		<div className="min-h-screen bg-bg text-ink cursor-auto">
-			<header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b border-border-strong bg-bg-raised/92 px-4 py-3 shadow-[0_10px_36px_-20px_rgba(0,0,0,0.55)] backdrop-blur-md sm:px-6">
+			<header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b border-border-strong bg-bg-raised/92 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))] shadow-[0_10px_36px_-20px_rgba(0,0,0,0.55)] backdrop-blur-md sm:px-6">
 				<div className="flex items-center gap-3 min-w-0 flex-1">
 					<Link
 						to={home}
@@ -166,7 +166,7 @@ export default function AppShell() {
 						onClick={() => setMenuOpen(false)}
 					/>
 					<nav
-						className="absolute top-0 right-0 bottom-0 w-[min(100%,320px)] bg-bg border-l border-border flex flex-col pt-4 shadow-xl"
+						className="absolute top-0 right-0 bottom-0 flex w-[min(100%,320px)] flex-col border-l border-border bg-bg pt-4 pb-[env(safe-area-inset-bottom,0px)] shadow-xl"
 						aria-label="Mobile navigation"
 					>
 						{destinations.map(({ to, label }) => (
@@ -203,7 +203,7 @@ export default function AppShell() {
 				</div>
 			) : null}
 
-			<main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 pb-16">
+			<main className="mx-auto max-w-6xl px-4 pb-[max(4rem,env(safe-area-inset-bottom,0px))] pt-10 sm:px-6">
 				{hint ? (
 					<div
 						role="status"

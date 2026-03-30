@@ -74,9 +74,9 @@ export default function RecruitmentSection() {
 	return (
 		<section
 			id="section-join"
-			className="w-full scroll-mt-14 border-t border-border bg-bg py-24 text-ink md:py-28"
+			className="w-full scroll-mt-20 border-t border-border bg-bg py-24 text-ink md:scroll-mt-14 md:py-28"
 		>
-			<div className="mx-auto max-w-7xl px-6">
+			<div className="mx-auto max-w-7xl px-4 sm:px-6">
 				{/* The Pitch */}
 				<div ref={pitchRef} className="mb-20 md:mb-28">
 					<h2 className="reveal-up type-marketing-kicker mb-4 text-muted">
@@ -116,7 +116,7 @@ export default function RecruitmentSection() {
 
 			{/* Full-bleed band: timeline + FAQs */}
 			<div className="marketing-full-bleed border-y border-border bg-surface/25 py-16 md:py-24">
-				<div className="mx-auto max-w-7xl px-6">
+				<div className="mx-auto max-w-7xl px-4 sm:px-6">
 					<div ref={timelineRef}>
 						<h2 className="reveal-up type-marketing-kicker mb-12 text-muted md:mb-16">
 							<span className="text-accent">[05]</span> RECRUITMENT TIMELINE

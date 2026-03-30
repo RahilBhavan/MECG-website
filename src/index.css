@@ -98,6 +98,37 @@ body {
 	cursor: auto;
 }
 
+/* Full-viewport pages on mobile (Safari toolbar, home indicator) */
+.min-h-dvh-screen {
+	min-height: 100vh;
+}
+
+@supports (height: 100dvh) {
+	.min-h-dvh-screen {
+		min-height: 100dvh;
+	}
+}
+
+/*
+ * Centered auth / status pages: respect notch + home indicator without clipping
+ * tap targets at the edges.
+ */
+.page-safe-insets {
+	padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
+	padding-right: max(1.5rem, env(safe-area-inset-right, 0px));
+	padding-top: max(1rem, env(safe-area-inset-top, 0px));
+	padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+}
+
+/* iOS Safari: 16px+ on form fields prevents auto-zoom on focus */
+@media (max-width: 640px) {
+	input:not([type="checkbox"]):not([type="radio"]),
+	textarea,
+	select {
+		font-size: 1rem;
+	}
+}
+
 /* Skip to main: hidden until keyboard :focus-visible */
 .skip-link {
 	position: absolute;

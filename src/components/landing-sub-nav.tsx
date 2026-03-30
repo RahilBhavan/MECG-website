@@ -17,14 +17,14 @@ type LandingSubNavProps = {
 
 export function LandingSubNav({ onNavigate }: LandingSubNavProps) {
 	return (
-		<div className="sticky top-3 z-20 px-3 sm:top-4 sm:px-4 scroll-mt-4">
+		<div className="sticky top-3 z-20 scroll-mt-4 px-2 sm:top-4 sm:px-4">
 			<nav
 				aria-label="Page sections"
 				className="mx-auto max-w-7xl rounded-lg border border-border-strong bg-bg/92 py-2 shadow-[0_12px_40px_-24px_rgba(0,0,0,0.75)] backdrop-blur-md supports-[backdrop-filter]:bg-bg/85"
 			>
-				<ul className="flex max-w-7xl flex-wrap items-center justify-center gap-0.5 px-2 sm:gap-1 sm:px-4 md:justify-start">
+				<ul className="flex max-w-7xl snap-x snap-mandatory flex-nowrap items-center justify-start gap-0.5 overflow-x-auto overscroll-x-contain px-2 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:flex-wrap sm:justify-center sm:gap-1 sm:overflow-visible sm:px-4 md:justify-start [&::-webkit-scrollbar]:hidden">
 					{NAV_ITEMS.map(({ id, label }) => (
-						<li key={id}>
+						<li key={id} className="snap-start">
 							<a
 								href={`#${id}`}
 								className="text-technical text-muted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring cursor-pointer inline-flex min-h-11 min-w-11 items-center justify-center rounded-md px-3 py-2 transition-colors duration-200"

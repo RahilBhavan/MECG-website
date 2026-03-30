@@ -29,7 +29,7 @@ export default function SignupPage() {
 
 	if (!configured && !loading) {
 		return (
-			<div className="min-h-screen bg-bg text-ink flex items-center justify-center px-6">
+			<div className="min-h-dvh-screen page-safe-insets flex items-center justify-center bg-bg text-ink">
 				<p className="text-technical text-muted text-center max-w-md">
 					Configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to enable
 					sign-up.
@@ -81,8 +81,8 @@ export default function SignupPage() {
 
 	if (successPanel) {
 		return (
-			<div className="min-h-screen bg-bg text-ink flex flex-col items-center justify-center px-6">
-				<div className="w-full max-w-md space-y-6 rounded-lg border border-success/50 bg-success-bg/25 p-8 shadow-[var(--shadow-marketing-md)]">
+			<div className="min-h-dvh-screen page-safe-insets flex flex-col items-center justify-center bg-bg text-ink">
+				<div className="w-full max-w-md space-y-6 rounded-lg border border-success/50 bg-success-bg/25 p-6 shadow-[var(--shadow-marketing-md)] sm:p-8">
 					<div className="flex items-center gap-3">
 						<span className="flex h-10 w-10 items-center justify-center rounded-full border border-success/60">
 							<Check className="h-5 w-5 text-success" aria-hidden />
@@ -112,8 +112,8 @@ export default function SignupPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-bg text-ink flex flex-col items-center justify-center px-6">
-			<div className="w-full max-w-md space-y-6 rounded-lg border border-border-strong bg-surface/30 p-8 shadow-[var(--shadow-marketing-md)]">
+		<div className="min-h-dvh-screen page-safe-insets flex flex-col items-center justify-center bg-bg text-ink">
+			<div className="w-full max-w-md space-y-6 rounded-lg border border-border-strong bg-surface/30 p-6 shadow-[var(--shadow-marketing-md)] sm:p-8">
 				<h1 className="type-auth-title">Create account</h1>
 				<p className="text-technical text-muted">
 					New accounts receive the applicant role by default. Alumni, reviewer,

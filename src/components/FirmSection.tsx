@@ -69,12 +69,12 @@ export default function FirmSection() {
 
 	return (
 		<section className="w-full border-t border-border bg-bg py-32 text-ink md:py-40">
-			<div className="mx-auto max-w-7xl px-6">
+			<div className="mx-auto max-w-7xl px-4 sm:px-6">
 				{/* Our History */}
 				<div
 					ref={historyRef}
 					id="section-history"
-					className="mb-32 grid scroll-mt-14 grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12"
+					className="mb-32 grid scroll-mt-20 grid-cols-1 gap-10 md:scroll-mt-14 lg:grid-cols-12 lg:gap-12"
 				>
 					<div className="reveal-up min-w-0 lg:col-span-4">
 						<h2 className="text-technical text-muted mb-4">
@@ -151,7 +151,7 @@ export default function FirmSection() {
 				{/* Meet the Team */}
 				<div
 					id="section-firm"
-					className="scroll-mt-14 border-t border-border pt-32"
+					className="scroll-mt-20 border-t border-border pt-32 md:scroll-mt-14"
 				>
 					<div ref={firmIntroRef} className="mb-16 space-y-12">
 						<div className="flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-baseline">

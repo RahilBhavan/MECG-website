@@ -67,8 +67,8 @@ export default function ResetPasswordPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-bg text-ink flex flex-col items-center justify-center px-6">
-			<div className="w-full max-w-md rounded-sm border border-border bg-surface/40 p-8 space-y-6">
+		<div className="min-h-dvh-screen page-safe-insets flex flex-col items-center justify-center bg-bg text-ink">
+			<div className="w-full max-w-md space-y-6 rounded-lg border border-border-strong bg-surface/30 p-6 shadow-[var(--shadow-marketing-md)] sm:p-8">
 				<h1 className="type-auth-title">Set new password</h1>
 				{!ready ? (
 					<p className="text-technical text-muted">Checking your reset link…</p>
