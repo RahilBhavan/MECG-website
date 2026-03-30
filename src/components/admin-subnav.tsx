@@ -19,14 +19,18 @@ export function AdminSubnav() {
 			<NavLink to="/admin/applications" className={subNavClass}>
 				Applications
 			</NavLink>
-			<NavLink to="/admin/reviews" className={subNavClass}>
-				Reviews audit
+			<NavLink
+				to="/admin/reviews"
+				className={subNavClass}
+				title="Reviewer submissions and audit log"
+			>
+				Review audit
 			</NavLink>
 			<NavLink to="/admin/directory" className={subNavClass}>
-				Directory export
+				Directory
 			</NavLink>
 			<NavLink to="/admin/network-events" className={subNavClass}>
-				Network events
+				Events
 			</NavLink>
 		</nav>
 	);

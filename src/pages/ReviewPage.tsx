@@ -1,6 +1,7 @@
 import {
 	BadgeCheck,
 	Bookmark,
+	ChevronDown,
 	CircleDot,
 	Eye,
 	EyeOff,
@@ -267,6 +268,7 @@ export default function ReviewPage() {
 				.filter(Boolean),
 		[tagsFilterRaw],
 	);
+
 	const assignmentFilter = (
 		["all", "mine", "unassigned"].includes(searchParams.get("assign") ?? "")
 			? searchParams.get("assign")
@@ -293,6 +295,16 @@ export default function ReviewPage() {
 		return batchSelect;
 	}, [batchSelect, batchCustom]);
 
+	const hasAdvancedFilters = useMemo(
+		() =>
+			sort !== "submitted_at" ||
+			dir !== "asc" ||
+			cohortFilter.trim() !== "" ||
+			tagsFilterRaw.trim() !== "" ||
+			batchCustom.trim() !== "",
+		[sort, dir, cohortFilter, tagsFilterRaw, batchCustom],
+	);
+
 	const [knownBatches, setKnownBatches] = useState<string[]>(() =>
 		envReviewBatchIds(),
 	);
@@ -309,11 +321,13 @@ export default function ReviewPage() {
 	const [undoStack, setUndoStack] = useState<UndoEntry[]>([]);
 	const [flashVerdict, setFlashVerdict] = useState<ReviewVerdict | null>(null);
 	const [notesOpen, setNotesOpen] = useState(false);
-	const [keyboardHelpOpen, setKeyboardHelpOpen] = useState(() =>
+	const [keyboardHelpOpen, setKeyboardHelpOpen] = useState(false);
+	const [compactHintVisible, setCompactHintVisible] = useState(() =>
 		typeof localStorage !== "undefined"
 			? localStorage.getItem(LEGEND_KEY) !== "1"
-			: true,
+			: false,
 	);
+	const [filtersExpanded, setFiltersExpanded] = useState(false);
 	const [swipeHintDismissed, setSwipeHintDismissed] = useState(() =>
 		typeof localStorage !== "undefined"
 			? localStorage.getItem(SWIPE_HINT_KEY) === "1"
@@ -359,6 +373,7 @@ export default function ReviewPage() {
 	);
 
 	const cardContentRef = useRef<HTMLDivElement>(null);
+	const didInitFilterExpand = useRef(false);
 	const screeningNotesRef = useRef<HTMLTextAreaElement>(null);
 	const screeningNotesRows = usePretextTextareaRows({
 		textareaRef: screeningNotesRef,
@@ -384,6 +399,12 @@ export default function ReviewPage() {
 	useEffect(() => {
 		setLocalReveal(false);
 	}, [current?.id]);
+
+	useEffect(() => {
+		if (didInitFilterExpand.current) return;
+		didInitFilterExpand.current = true;
+		if (hasAdvancedFilters) setFiltersExpanded(true);
+	}, [hasAdvancedFilters]);
 
 	useEffect(() => {
 		if (!user?.id || !current?.id) {
@@ -539,8 +560,14 @@ export default function ReviewPage() {
 		})();
 	}, [user]);
 
+	const dismissCompactHint = useCallback(() => {
+		localStorage.setItem(LEGEND_KEY, "1");
+		setCompactHintVisible(false);
+	}, []);
+
 	const dismissKeyboardHelp = useCallback(() => {
 		localStorage.setItem(LEGEND_KEY, "1");
+		setCompactHintVisible(false);
 		setKeyboardHelpOpen(false);
 	}, []);
 
@@ -751,7 +778,7 @@ export default function ReviewPage() {
 	}
 
 	return (
-		<div className="space-y-8 relative">
+		<div className="space-y-5 relative">
 			{flashVerdict ? (
 				<div
 					className={`pointer-events-none fixed inset-0 z-[150] transition-opacity duration-200 ${flashClass(flashVerdict)}`}
@@ -759,164 +786,131 @@ export default function ReviewPage() {
 				/>
 			) : null}
 
-			<div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-				<div>
-					<h1 className="type-portal-title">Review queue</h1>
-					<p className="text-technical text-muted max-w-xl">
-						{queue.length} left in this view
-						{reviewPhase === "screening" ? (
-							<span className="ml-2">
-								· Screening backlog: {screeningRemaining}
-							</span>
-						) : (
-							<span className="ml-2">· Final queue: {finalRemaining}</span>
-						)}
-						{batchFilter !== "all" ? (
-							<span className="ml-2">
-								· Batch: <span className="text-ink">{batchFilter}</span>
-							</span>
-						) : null}
-						<span className="ml-2">
-							· {eligibleCount} eligible (after assignment filter)
-						</span>
-					</p>
-					<p className="sr-only" aria-live="polite" aria-atomic="true">
-						{queue.length} {queue.length === 1 ? "application" : "applications"}{" "}
-						left in your review queue.
-					</p>
-				</div>
-				<div className="flex flex-wrap gap-3 items-center">
-					<div className="flex rounded border border-border overflow-hidden">
+			<div className="flex flex-col gap-3">
+				<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+					<div>
+						<h1 className="type-portal-title">Review queue</h1>
+						<p className="text-technical text-muted text-xs sm:text-sm max-w-2xl leading-relaxed">
+							<span className="text-ink">{queue.length}</span> in view
+							{reviewPhase === "screening" ? (
+								<>
+									{" "}
+									· backlog{" "}
+									<span className="text-ink">{screeningRemaining}</span>
+								</>
+							) : (
+								<>
+									{" "}
+									· final <span className="text-ink">{finalRemaining}</span>
+								</>
+							)}
+							{batchFilter !== "all" ? (
+								<>
+									{" "}
+									· batch <span className="text-ink">{batchFilter}</span>
+								</>
+							) : null}{" "}
+							· <span className="text-ink">{eligibleCount}</span> eligible
+						</p>
+						<p className="sr-only" aria-live="polite" aria-atomic="true">
+							{queue.length}{" "}
+							{queue.length === 1 ? "application" : "applications"} left in your
+							review queue.
+						</p>
+					</div>
+					<div className="flex flex-wrap gap-2 items-center shrink-0">
+						<div className="flex rounded border border-border overflow-hidden">
+							<button
+								type="button"
+								className={`min-h-11 px-3 text-technical text-sm inline-flex items-center gap-1 ${viewMode === "deck" ? "bg-ink/10" : ""}`}
+								onClick={() => setViewMode("deck")}
+								aria-pressed={viewMode === "deck"}
+							>
+								<LayoutGrid className="size-4" aria-hidden />
+								Deck
+							</button>
+							<button
+								type="button"
+								className={`min-h-11 px-3 text-technical text-sm inline-flex items-center gap-1 border-l border-border ${viewMode === "table" ? "bg-ink/10" : ""}`}
+								onClick={() => setViewMode("table")}
+								aria-pressed={viewMode === "table"}
+							>
+								<List className="size-4" aria-hidden />
+								Table
+							</button>
+						</div>
 						<button
 							type="button"
-							className={`min-h-11 px-3 text-technical inline-flex items-center gap-1 ${viewMode === "deck" ? "bg-ink/10" : ""}`}
-							onClick={() => setViewMode("deck")}
-							aria-pressed={viewMode === "deck"}
+							className="min-h-11 min-w-11 border border-border flex items-center justify-center hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded"
+							onClick={() => {
+								const next = !blindMode;
+								setBlindMode(next);
+								localStorage.setItem(BLIND_PREF_KEY, next ? "1" : "0");
+							}}
+							aria-pressed={blindMode}
+							aria-label={
+								blindMode
+									? "Blind mode on — hide identity until reveal"
+									: "Blind mode off"
+							}
 						>
-							<LayoutGrid className="size-4" aria-hidden />
-							Deck
+							{blindMode ? (
+								<EyeOff className="h-5 w-5" aria-hidden />
+							) : (
+								<Eye className="h-5 w-5" aria-hidden />
+							)}
 						</button>
 						<button
 							type="button"
-							className={`min-h-11 px-3 text-technical inline-flex items-center gap-1 border-l border-border ${viewMode === "table" ? "bg-ink/10" : ""}`}
-							onClick={() => setViewMode("table")}
-							aria-pressed={viewMode === "table"}
+							className="min-h-11 min-w-11 border border-border flex items-center justify-center hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded"
+							aria-expanded={keyboardHelpOpen}
+							aria-label="Toggle keyboard shortcuts help"
+							onClick={() => setKeyboardHelpOpen((o) => !o)}
 						>
-							<List className="size-4" aria-hidden />
-							Table
+							<HelpCircle className="h-5 w-5" aria-hidden />
 						</button>
 					</div>
-					<button
-						type="button"
-						className={`min-h-11 min-w-11 border border-border flex items-center justify-center hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded`}
-						onClick={() => {
-							const next = !blindMode;
-							setBlindMode(next);
-							localStorage.setItem(BLIND_PREF_KEY, next ? "1" : "0");
-						}}
-						aria-pressed={blindMode}
-						aria-label={
-							blindMode
-								? "Blind mode on — hide identity until reveal"
-								: "Blind mode off"
-						}
-					>
-						{blindMode ? (
-							<EyeOff className="h-5 w-5" aria-hidden />
-						) : (
-							<Eye className="h-5 w-5" aria-hidden />
-						)}
-					</button>
-					<button
-						type="button"
-						className="min-h-11 min-w-11 border border-border flex items-center justify-center hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded"
-						aria-expanded={keyboardHelpOpen}
-						aria-label="Toggle keyboard shortcuts help"
-						onClick={() => setKeyboardHelpOpen((o) => !o)}
-					>
-						<HelpCircle className="h-5 w-5" aria-hidden />
-					</button>
-					<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2 flex-wrap">
-						<label className="text-technical text-muted flex flex-wrap items-center gap-2 min-h-11">
-							Phase
+				</div>
+
+				<section
+					aria-labelledby="review-queue-filters-heading"
+					className="flex flex-col gap-2 border border-border/70 border-dashed bg-bg-raised/20 px-3 py-2 sm:px-3 sm:py-2"
+				>
+					<h2 id="review-queue-filters-heading" className="sr-only">
+						Queue filters
+					</h2>
+					<div className="flex flex-wrap gap-2 sm:gap-3 items-end">
+						<label className="text-technical text-muted flex flex-col gap-1 text-xs min-w-0">
+							<span>Phase</span>
 							<select
 								value={reviewPhase}
 								onChange={(e) =>
 									setParam("phase", e.target.value === "final" ? "final" : null)
 								}
-								className="bg-bg border border-border px-2 py-2 min-h-11 font-sans w-36 max-w-full focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+								className="bg-bg border border-border px-2 py-2 min-h-11 font-sans w-full min-w-[7.5rem] sm:w-32 max-w-full focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 							>
 								<option value="screening">Screening</option>
 								<option value="final">Final</option>
 							</select>
 						</label>
-						<label className="text-technical text-muted flex flex-wrap items-center gap-2 min-h-11">
-							Assignment
+						<label className="text-technical text-muted flex flex-col gap-1 text-xs min-w-0">
+							<span>Assignment</span>
 							<select
 								value={assignmentFilter}
 								onChange={(e) => setParam("assign", e.target.value)}
-								className="bg-bg border border-border px-2 py-2 min-h-11 font-sans w-40 max-w-full focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+								className="bg-bg border border-border px-2 py-2 min-h-11 font-sans w-full min-w-[9rem] sm:w-36 max-w-full focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 							>
 								<option value="all">All</option>
 								<option value="mine">Assigned to me</option>
-								<option value="unassigned">Unassigned pool</option>
+								<option value="unassigned">Unassigned</option>
 							</select>
 						</label>
-						<label className="text-technical text-muted flex flex-wrap items-center gap-2 min-h-11">
-							Sort
-							<select
-								value={sort}
-								onChange={(e) => setParam("sort", e.target.value)}
-								className="bg-bg border border-border px-2 py-2 min-h-11 font-sans w-40 max-w-full focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-							>
-								<option value="submitted_at">Submitted</option>
-								<option value="created_at">Created</option>
-								<option value="batch_id">Batch id</option>
-								<option value="random">Random</option>
-							</select>
-						</label>
-						<label className="text-technical text-muted flex flex-wrap items-center gap-2 min-h-11">
-							Dir
-							<select
-								value={dir}
-								onChange={(e) => setParam("dir", e.target.value)}
-								className="bg-bg border border-border px-2 py-2 min-h-11 font-sans w-28 max-w-full focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-							>
-								<option value="asc">Ascending</option>
-								<option value="desc">Descending</option>
-							</select>
-						</label>
-						<label className="text-technical text-muted flex flex-wrap items-center gap-2 min-h-11">
-							Cohort
-							<select
-								value={cohortFilter}
-								onChange={(e) => setParam("cohort", e.target.value)}
-								className="bg-bg border border-border px-2 py-2 min-h-11 font-sans w-36 max-w-full focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-							>
-								<option value="">Any</option>
-								{cohortOptions.map((c) => (
-									<option key={c} value={c}>
-										{c}
-									</option>
-								))}
-							</select>
-						</label>
-						<label className="text-technical text-muted flex flex-wrap items-center gap-2 min-h-11">
-							Tags (all)
-							<input
-								type="text"
-								value={tagsFilterRaw}
-								onChange={(e) => setParam("tags", e.target.value)}
-								placeholder="comma,separated"
-								className="bg-transparent border border-border px-2 py-2 min-h-11 font-sans w-44 max-w-full focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-							/>
-						</label>
-						<label className="text-technical text-muted flex flex-wrap items-center gap-2 min-h-11">
-							Batch
+						<label className="text-technical text-muted flex flex-col gap-1 text-xs min-w-0">
+							<span>Batch</span>
 							<select
 								value={batchSelect}
 								onChange={(e) => setBatchSelect(e.target.value)}
-								className="bg-bg border border-border px-2 py-2 min-h-11 font-sans w-40 max-w-full focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+								className="bg-bg border border-border px-2 py-2 min-h-11 font-sans w-full min-w-[8rem] sm:w-36 max-w-full focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 							>
 								<option value="all">All batches</option>
 								{knownBatches.map((id) => (
@@ -926,39 +920,141 @@ export default function ReviewPage() {
 								))}
 							</select>
 						</label>
-						<label className="text-technical text-muted flex flex-wrap items-center gap-2 min-h-11">
-							<span className="sr-only sm:not-sr-only sm:inline">
-								Custom id
-							</span>
-							<input
-								type="text"
-								value={batchCustom}
-								onChange={(e) => setBatchCustom(e.target.value)}
-								placeholder="Custom id (overrides menu)"
-								className="bg-transparent border border-border px-2 py-2 min-h-11 font-sans w-40 sm:w-36 focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-							/>
-						</label>
+						<div className="flex flex-wrap gap-2 items-center ml-auto w-full sm:w-auto justify-end">
+							<button
+								type="button"
+								onClick={() => void refreshQueue()}
+								className="border border-border px-3 py-2 min-h-11 text-technical text-sm hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+							>
+								Refresh
+							</button>
+							<button
+								type="button"
+								disabled={!undoStack.length}
+								onClick={() => void undoLast()}
+								className="border border-border px-3 py-2 min-h-11 text-technical text-sm hover:border-ink disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+							>
+								Undo
+							</button>
+						</div>
 					</div>
 					<button
 						type="button"
-						onClick={() => void refreshQueue()}
-						className="border border-border px-4 py-2 min-h-11 text-technical hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+						className="flex items-center gap-1.5 text-technical text-xs text-muted hover:text-ink min-h-10 w-fit focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded"
+						aria-expanded={filtersExpanded}
+						onClick={() => setFiltersExpanded((e) => !e)}
 					>
-						Refresh
+						<ChevronDown
+							className={`size-3.5 shrink-0 transition-transform ${filtersExpanded ? "rotate-180" : ""}`}
+							aria-hidden
+						/>
+						More filters
+						{hasAdvancedFilters && !filtersExpanded ? (
+							<span className="rounded border border-accent/50 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-accent">
+								Active
+							</span>
+						) : null}
 					</button>
-					<button
-						type="button"
-						disabled={!undoStack.length}
-						onClick={() => void undoLast()}
-						className="border border-border px-4 py-2 min-h-11 text-technical hover:border-ink disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-					>
-						Undo last review
-					</button>
-				</div>
+					{filtersExpanded ? (
+						<div className="flex flex-wrap gap-2 sm:gap-3 items-end pt-1 border-t border-border/50">
+							<label className="text-technical text-muted flex flex-col gap-1 text-xs min-w-0">
+								<span>Sort</span>
+								<select
+									value={sort}
+									onChange={(e) => setParam("sort", e.target.value)}
+									className="bg-bg border border-border px-2 py-2 min-h-11 font-sans w-full min-w-[8rem] sm:w-36 max-w-full focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+								>
+									<option value="submitted_at">Submitted</option>
+									<option value="created_at">Created</option>
+									<option value="batch_id">Batch id</option>
+									<option value="random">Random</option>
+								</select>
+							</label>
+							<label className="text-technical text-muted flex flex-col gap-1 text-xs min-w-0">
+								<span>Direction</span>
+								<select
+									value={dir}
+									onChange={(e) => setParam("dir", e.target.value)}
+									className="bg-bg border border-border px-2 py-2 min-h-11 font-sans w-full min-w-[7rem] sm:w-32 max-w-full focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+								>
+									<option value="asc">Ascending</option>
+									<option value="desc">Descending</option>
+								</select>
+							</label>
+							<label className="text-technical text-muted flex flex-col gap-1 text-xs min-w-0">
+								<span>Cohort</span>
+								<select
+									value={cohortFilter}
+									onChange={(e) => setParam("cohort", e.target.value)}
+									className="bg-bg border border-border px-2 py-2 min-h-11 font-sans w-full min-w-[7rem] sm:w-36 max-w-full focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+								>
+									<option value="">Any</option>
+									{cohortOptions.map((c) => (
+										<option key={c} value={c}>
+											{c}
+										</option>
+									))}
+								</select>
+							</label>
+							<label className="text-technical text-muted flex flex-col gap-1 text-xs flex-1 min-w-[10rem] max-w-md">
+								<span>Tags (match all)</span>
+								<input
+									type="text"
+									value={tagsFilterRaw}
+									onChange={(e) => setParam("tags", e.target.value)}
+									placeholder="tag1, tag2"
+									className="bg-transparent border border-border px-2 py-2 min-h-11 font-sans w-full max-w-md focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+								/>
+							</label>
+							<label className="text-technical text-muted flex flex-col gap-1 text-xs min-w-0">
+								<span>Custom batch id</span>
+								<input
+									type="text"
+									value={batchCustom}
+									onChange={(e) => setBatchCustom(e.target.value)}
+									placeholder="Overrides menu above"
+									className="bg-transparent border border-border px-2 py-2 min-h-11 font-sans w-full min-w-[8rem] sm:w-40 focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+								/>
+							</label>
+						</div>
+					) : null}
+				</section>
 			</div>
 
+			{compactHintVisible ? (
+				<div className="flex flex-wrap items-center gap-x-3 gap-y-2 border border-border/60 bg-bg-raised/30 px-3 py-2 text-technical text-xs text-muted">
+					<span>
+						<span className="text-ink font-medium">Shortcuts:</span> ← pass · →
+						yes · ↑ maybe
+						{reviewPhase === "screening" ? " · ↓ shortlist" : ""} ·{" "}
+						<kbd className="px-1 border border-border rounded text-[10px]">
+							?
+						</kbd>{" "}
+						full help ·{" "}
+						<kbd className="px-1 border border-border rounded text-[10px]">
+							u
+						</kbd>{" "}
+						undo ·{" "}
+						<kbd className="px-1 border border-border rounded text-[10px]">
+							n
+						</kbd>{" "}
+						notes
+					</span>
+					<button
+						type="button"
+						onClick={dismissCompactHint}
+						className="border border-border px-2 py-1.5 min-h-9 text-technical text-xs hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+					>
+						Dismiss
+					</button>
+				</div>
+			) : null}
+
 			{keyboardHelpOpen ? (
-				<div className="border border-border px-4 py-3 text-technical text-muted text-sm space-y-2">
+				<section
+					className="border border-border px-4 py-3 text-technical text-muted text-sm space-y-2"
+					aria-label="Keyboard shortcuts"
+				>
 					<p>
 						<strong className="text-ink">Screening:</strong> ← pass · → strong
 						yes · ↑ maybe · ↓ shortlist (or swipe). Keys 1–4 = pass / maybe /
@@ -977,9 +1073,9 @@ export default function ReviewPage() {
 						onClick={dismissKeyboardHelp}
 						className="border border-border px-3 py-2 min-h-11 hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 					>
-						Got it
+						Close
 					</button>
-				</div>
+				</section>
 			) : null}
 
 			{message ? (
@@ -1216,12 +1312,11 @@ export default function ReviewPage() {
             lg:static lg:z-auto lg:border lg:shadow-none lg:rounded-none
             ${notesOpen ? "block" : "hidden lg:block"}`}
 				>
-					<h3 className="type-portal-title-sans text-muted">
+					<h3 className="type-portal-title-sans text-muted text-base">
 						Rubric &amp; notes
 					</h3>
-					<p className="text-technical text-[11px] text-muted">
-						Notes are private to reviewers and admins; applicants never see
-						them.
+					<p className="text-technical text-[10px] leading-snug text-muted">
+						Private to reviewers and admins — not visible to applicants.
 					</p>
 					{peerReviews.length > 0 ? (
 						<div className="border border-border/60 p-3 space-y-2 bg-bg-raised/30">

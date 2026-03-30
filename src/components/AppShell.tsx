@@ -12,15 +12,13 @@ function roleDestinations(
 	roleList: AppRole[],
 ): { to: string; label: string }[] {
 	const items: { to: string; label: string }[] = [];
+	/** One Admin entry — sub-pages (applications, audit, etc.) live under AdminSubnav. */
 	if (hasRole(roleList, "admin")) {
 		items.push({ to: "/admin", label: "Admin" });
-		items.push({ to: "/admin/applications", label: "Applications" });
-		items.push({ to: "/admin/reviews", label: "Reviews" });
-		items.push({ to: "/admin/directory", label: "Directory" });
-		items.push({ to: "/admin/network-events", label: "Events" });
 	}
+	/** Card screening queue (/review), distinct from Admin → Review audit. */
 	if (hasRole(roleList, "reviewer"))
-		items.push({ to: "/review", label: "Review" });
+		items.push({ to: "/review", label: "Screen" });
 	if (hasRole(roleList, "alumni"))
 		items.push({ to: "/network", label: "Network" });
 	if (hasRole(roleList, "applicant"))
@@ -30,10 +28,10 @@ function roleDestinations(
 
 function portalHintText(roles: AppRole[]): string | null {
 	if (hasRole(roles, "admin")) {
-		return "Assign roles from Admin; new signups default to applicant.";
+		return "Use Admin for roles, applications, audit, and exports; new signups default to applicant.";
 	}
 	if (hasRole(roles, "reviewer")) {
-		return "Review submitted applications in your batch—use keyboard ← pass, → yes, ↑ maybe.";
+		return "Open Screen for the card queue—keyboard ← pass, → yes, ↑ maybe.";
 	}
 	if (hasRole(roles, "alumni")) {
 		return "Turn on directory visibility in Network so other alumni can find you.";
