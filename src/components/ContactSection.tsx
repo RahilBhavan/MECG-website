@@ -96,7 +96,7 @@ export default function ContactSection() {
 								{mailtoHref ? (
 									<a
 										href={mailtoHref}
-										className="text-technical inline-flex min-h-11 items-center justify-center border border-accent px-6 py-3 text-accent transition-colors hover:bg-accent hover:text-bg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+										className="btn-marketing-primary min-h-11 px-8"
 									>
 										Open in email app
 									</a>
@@ -104,7 +104,7 @@ export default function ContactSection() {
 								<button
 									type="button"
 									onClick={handleResetForm}
-									className="text-technical text-muted inline-flex min-h-11 items-center justify-center border border-border px-6 py-3 transition-colors hover:border-ink hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+									className="btn-marketing-outline text-technical text-muted min-h-11 px-6"
 								>
 									Send another inquiry
 								</button>
@@ -220,12 +220,12 @@ export default function ContactSection() {
 										required
 									/>
 								</div>
-								<div className="flex justify-end mt-8">
+								<div className="mt-8 flex justify-end">
 									<button
 										type="submit"
-										className="text-technical text-accent border border-accent px-8 py-4 min-h-11 hover:bg-accent hover:text-bg transition-colors uppercase tracking-widest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+										className="btn-marketing-primary min-h-12 px-10"
 									>
-										Submit Inquiry
+										Submit inquiry
 									</button>
 								</div>
 							</form>

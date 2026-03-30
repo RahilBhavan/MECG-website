@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { hasRole, useAuth } from "@/src/auth/AuthProvider";
 import { ApplyPageSkeleton } from "@/src/components/skeletons/ApplyPageSkeleton";
 import { useToast } from "@/src/components/toast/ToastProvider";
@@ -505,9 +506,13 @@ export default function ApplyPage() {
 
 	return (
 		<div className="space-y-10">
-			<div>
+			<div className="max-w-3xl border-b border-border pb-8">
 				<h1 className="type-portal-title">Application</h1>
-				<p className="text-technical text-muted">
+				<p className="mt-2 text-sm font-sans font-light leading-relaxed text-muted">
+					Answer in steps — your draft saves on this device until you submit.
+					Headshots stay private to reviewers.
+				</p>
+				<p className="text-technical mt-4 text-muted">
 					Status: <span className="text-ink">{status}</span>
 					{row?.submitted_at ? (
 						<span className="ml-2">
@@ -588,8 +593,8 @@ export default function ApplyPage() {
 			) : null}
 
 			{isEditable ? (
-				<div className="space-y-4 max-sm:pb-28">
-					<div className="sticky top-0 z-10 -mx-2 px-2 py-3 bg-bg/95 backdrop-blur border-b border-border">
+				<div className="max-sm:pb-28 space-y-6">
+					<div className="sticky top-0 z-10 -mx-1 rounded-b-lg border border-t-0 border-border bg-bg/95 px-4 py-4 shadow-[0_12px_32px_-20px_rgba(0,0,0,0.5)] backdrop-blur-md supports-[backdrop-filter]:bg-bg/90 sm:-mx-0 sm:border-t sm:border-border">
 						<p className="text-technical text-muted mb-1" id="apply-step-label">
 							Step {activeStep + 1} of {STEPS.length}: {STEPS[activeStep]}
 						</p>
@@ -608,7 +613,7 @@ export default function ApplyPage() {
 							aria-labelledby="apply-step-label"
 						>
 							<div
-								className="h-full bg-accent transition-[width] duration-300 ease-out"
+								className="h-full bg-gradient-to-r from-accent to-accent-hover transition-[width] duration-300 ease-out"
 								style={{ width: `${((activeStep + 1) / STEPS.length) * 100}%` }}
 							/>
 						</div>
@@ -632,7 +637,7 @@ export default function ApplyPage() {
 					</div>
 
 					<fieldset
-						className="grid min-w-0 gap-4 border border-border p-4 sm:p-6 space-y-4"
+						className="grid min-w-0 gap-6 space-y-4 rounded-lg border border-border-strong bg-surface/25 p-5 sm:p-8"
 						aria-labelledby="apply-step-label"
 						aria-describedby="apply-required-hint"
 					>
@@ -701,7 +706,7 @@ export default function ApplyPage() {
 										</span>
 									) : null}
 								</label>
-								<div className="space-y-2">
+								<div className="space-y-3 rounded-lg border-2 border-dashed border-border bg-bg/40 p-4 sm:p-5">
 									<span
 										className="text-technical text-muted block"
 										id="application-headshot-label"
@@ -731,19 +736,29 @@ export default function ApplyPage() {
 										onChange={onHeadshotFileInputChange}
 									/>
 									{headshotDisplayUrl ? (
-										<img
-											src={headshotDisplayUrl}
-											alt="Headshot preview"
-											width={128}
-											height={128}
-											decoding="async"
-											className="h-32 w-32 rounded border border-border object-cover"
-										/>
-									) : null}
+										<div className="overflow-hidden rounded-md border border-border-strong bg-bg-raised/50 p-1 w-fit">
+											<img
+												src={headshotDisplayUrl}
+												alt="Headshot preview"
+												width={160}
+												height={160}
+												decoding="async"
+												className="h-36 w-36 rounded-sm object-cover sm:h-40 sm:w-40"
+											/>
+										</div>
+									) : (
+										<div
+											aria-hidden
+											className="flex h-36 w-36 items-center justify-center rounded-md border border-border bg-surface/30 text-technical text-muted sm:h-40 sm:w-40"
+										>
+											Preview
+										</div>
+									)}
 									<div className="flex flex-wrap gap-3">
-										<button
+										<Button
 											ref={headshotPickRef}
 											type="button"
+											variant="secondary"
 											disabled={headshotUploading}
 											aria-invalid={!!fieldErrors.headshotPath}
 											aria-labelledby="application-headshot-label"
@@ -752,24 +767,25 @@ export default function ApplyPage() {
 													? "application-headshot-error application-headshot-hint"
 													: "application-headshot-hint"
 											}
+											className="min-h-11 px-6 text-technical uppercase tracking-[var(--tracking-technical)]"
 											onClick={() => headshotInputRef.current?.click()}
-											className={`border border-border px-5 py-3 min-h-11 text-technical hover:border-ink transition-colors disabled:opacity-50 ${PORTAL_FIELD_FOCUS}`}
 										>
 											{headshotUploading
 												? "Uploading…"
 												: answers.headshotPath?.trim()
 													? "Replace photo"
 													: "Choose photo"}
-										</button>
+										</Button>
 										{answers.headshotPath?.trim() ? (
-											<button
+											<Button
 												type="button"
+												variant="outline"
 												disabled={headshotUploading}
+												className="min-h-11 border-danger/40 text-danger hover:border-danger hover:bg-danger/10"
 												onClick={() => void removeHeadshot()}
-												className={`border border-border px-5 py-3 min-h-11 text-technical text-muted hover:border-danger hover:text-danger transition-colors disabled:opacity-50 ${PORTAL_FIELD_FOCUS}`}
 											>
 												Remove photo
-											</button>
+											</Button>
 										) : null}
 									</div>
 									{fieldErrors.headshotPath ? (
@@ -932,35 +948,32 @@ export default function ApplyPage() {
 						) : null}
 					</fieldset>
 
-					<div className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-bg/95 backdrop-blur-md px-4 py-3 sm:static sm:z-auto sm:border-0 sm:bg-transparent sm:backdrop-blur-none sm:p-0 sm:mt-2">
-						<div className="max-w-6xl mx-auto flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+					<div className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-bg/95 px-4 py-3 backdrop-blur-md sm:static sm:z-auto sm:mt-4 sm:rounded-lg sm:border sm:bg-surface/20 sm:px-5 sm:py-4 sm:shadow-[0_-8px_40px_-28px_rgba(0,0,0,0.45)] sm:backdrop-blur-none">
+						<div className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
 							<div className="flex flex-wrap gap-3 sm:gap-4">
-								<button
+								<Button
 									type="button"
+									variant="outline"
 									disabled={saving}
+									className="min-h-11 min-w-[9rem] text-technical uppercase tracking-[var(--tracking-technical)]"
 									onClick={() => void saveDraft()}
-									className="border border-border px-6 py-3 min-h-11 text-technical hover:border-ink transition-colors disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 								>
 									Save draft
-								</button>
-								<button
+								</Button>
+								<Button
 									type="button"
 									disabled={saving || !submitReady}
-									onClick={() => openSubmitDialog()}
+									className="min-h-11 min-w-[11rem] text-technical uppercase tracking-[var(--tracking-technical)]"
 									aria-describedby="apply-submit-help"
 									title={
 										!submitReady
 											? "Complete all required fields first"
 											: undefined
 									}
-									className={`px-6 py-3 min-h-11 text-technical transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
-										saving || !submitReady
-											? "cursor-not-allowed border border-border text-muted"
-											: "border border-accent text-accent hover:bg-accent hover:text-bg"
-									}`}
+									onClick={() => openSubmitDialog()}
 								>
 									Submit application
-								</button>
+								</Button>
 							</div>
 							<p
 								id="apply-submit-help"
@@ -986,38 +999,39 @@ export default function ApplyPage() {
 
 					<dialog
 						ref={submitDialogRef}
-						className="w-[min(100%,28rem)] max-h-[min(90dvh,32rem)] border border-border bg-bg p-6 text-ink shadow-xl backdrop:bg-bg/80"
+						className="w-[min(100%,28rem)] max-h-[min(90dvh,32rem)] rounded-lg border border-border-strong bg-bg-raised p-6 text-ink shadow-2xl backdrop:bg-bg/80 open:backdrop:backdrop-blur-sm"
 						aria-labelledby="apply-submit-dialog-title"
 					>
 						<div className="space-y-4">
 							<h2
 								id="apply-submit-dialog-title"
-								className="type-auth-state-title font-sans text-lg"
+								className="type-auth-state-title text-lg font-sans"
 							>
 								Submit application?
 							</h2>
-							<p className="text-sm text-muted leading-relaxed">
+							<p className="text-sm leading-relaxed text-muted">
 								This sends your application to the recruitment team. You will
 								not be able to change your answers afterward. Use{" "}
 								<span className="text-technical text-ink">Save draft</span> if
 								you still need to edit.
 							</p>
-							<div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end pt-2">
-								<button
+							<div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
+								<Button
 									type="button"
+									variant="outline"
+									className="min-h-11 w-full text-technical sm:w-auto"
 									onClick={closeSubmitDialog}
-									className="border border-border px-5 py-3 min-h-11 text-technical hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 								>
 									Keep editing
-								</button>
-								<button
+								</Button>
+								<Button
 									type="button"
 									disabled={saving}
+									className="min-h-11 w-full text-technical sm:w-auto"
 									onClick={() => void confirmSubmit()}
-									className="border border-accent px-5 py-3 min-h-11 text-technical text-accent hover:bg-accent hover:text-bg disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 								>
 									{saving ? "Submitting…" : "Submit now"}
-								</button>
+								</Button>
 							</div>
 						</div>
 					</dialog>

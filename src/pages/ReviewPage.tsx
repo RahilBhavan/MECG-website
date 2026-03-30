@@ -119,7 +119,10 @@ const CardContent = forwardRef<HTMLDivElement, { answers: ApplicationAnswers }>(
 	function CardContent({ answers }, ref) {
 		const headshotPath = answers.headshotPath?.trim();
 		return (
-			<div ref={ref} className="space-y-4 p-6">
+			<div
+				ref={ref}
+				className="space-y-5 border-l-4 border-l-accent/45 p-6 sm:p-8"
+			>
 				{headshotPath ? (
 					<div className="flex justify-center sm:justify-start">
 						<ReviewApplicantHeadshot
@@ -128,13 +131,13 @@ const CardContent = forwardRef<HTMLDivElement, { answers: ApplicationAnswers }>(
 						/>
 					</div>
 				) : null}
-				<h2 className="text-2xl font-display">
+				<h2 className="font-display text-2xl tracking-tight text-ink-secondary sm:text-3xl">
 					{answers.fullName || "Applicant"}
 				</h2>
-				<p className="text-technical text-muted">
+				<p className="type-marketing-kicker text-muted">
 					{answers.major} · {answers.academicYear}
 				</p>
-				<p className="font-sans font-light text-muted leading-relaxed whitespace-pre-wrap">
+				<p className="whitespace-pre-wrap font-sans font-light leading-relaxed text-muted">
 					{answers.whyMecg}
 				</p>
 				{answers.resumeUrl ? (
@@ -647,7 +650,7 @@ export default function ReviewPage() {
 								}}
 								dragElastic={0.85}
 								onDragEnd={onDragEnd}
-								className={`relative z-10 w-full border border-border bg-bg shadow-2xl ${
+								className={`relative z-10 w-full border border-border-strong bg-bg shadow-[var(--shadow-marketing-lg)] ${
 									reduceMotion ? "" : "cursor-grab active:cursor-grabbing"
 								} touch-pan-y`}
 								layout={!reduceMotion}
@@ -727,12 +730,12 @@ export default function ReviewPage() {
 							Expands up to 14 lines with your text, then scrolls.
 						</p>
 					</label>
-					<div className="grid grid-cols-3 gap-2">
+					<div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-2">
 						<button
 							type="button"
 							onClick={() => void recordVerdict("pass")}
 							disabled={!current}
-							className="flex min-h-11 flex-col items-center justify-center gap-1 border border-danger/50 px-1 py-2 text-technical text-xs text-danger disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:flex-row sm:gap-1.5"
+							className="flex min-h-12 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-danger/50 bg-danger-bg/20 px-3 py-3 text-technical text-xs text-danger transition-colors duration-200 hover:bg-danger-bg/35 disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:min-h-11 sm:flex-row sm:gap-2"
 						>
 							<X className="size-4 shrink-0" aria-hidden />
 							Pass
@@ -741,7 +744,7 @@ export default function ReviewPage() {
 							type="button"
 							onClick={() => void recordVerdict("maybe")}
 							disabled={!current}
-							className="flex min-h-11 flex-col items-center justify-center gap-1 border border-warning/50 px-1 py-2 text-technical text-xs text-warning disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:flex-row sm:gap-1.5"
+							className="flex min-h-12 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-warning/50 bg-warning-bg/20 px-3 py-3 text-technical text-xs text-warning transition-colors duration-200 hover:bg-warning-bg/35 disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:min-h-11 sm:flex-row sm:gap-2"
 						>
 							<CircleDot className="size-4 shrink-0" aria-hidden />
 							Maybe
@@ -750,7 +753,7 @@ export default function ReviewPage() {
 							type="button"
 							onClick={() => void recordVerdict("yes")}
 							disabled={!current}
-							className="flex min-h-11 flex-col items-center justify-center gap-1 border border-success/50 px-1 py-2 text-technical text-xs text-success disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:flex-row sm:gap-1.5"
+							className="flex min-h-12 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-success/50 bg-success-bg/20 px-3 py-3 text-technical text-xs text-success transition-colors duration-200 hover:bg-success-bg/35 disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:min-h-11 sm:flex-row sm:gap-2"
 						>
 							<BadgeCheck className="size-4 shrink-0" aria-hidden />
 							Strong yes

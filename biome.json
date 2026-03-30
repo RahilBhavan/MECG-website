@@ -6,7 +6,13 @@
 		"useIgnoreFile": true
 	},
 	"files": {
-		"includes": ["**", "!!**/dist", "!!**/public/og.png", "!!**/.cursor"]
+		"includes": [
+			"**",
+			"!!**/dist",
+			"!!**/public/og.png",
+			"!!**/.cursor",
+			"!!**/.claude"
+		]
 	},
 	"formatter": {
 		"enabled": true,

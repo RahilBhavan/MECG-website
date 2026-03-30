@@ -10,16 +10,22 @@ export default function PublicHeader() {
 			>
 				MECG <span className="text-muted">//</span> CONSULTING
 			</Link>
-			<div className="flex items-center gap-2 sm:gap-4">
+			<div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
+				<Link
+					to="/signup"
+					className="pointer-events-auto btn-marketing-outline min-h-11 border-ink/35 bg-bg/55 px-4 py-3 backdrop-blur-sm min-w-[6.5rem]"
+				>
+					Join
+				</Link>
 				<Link
 					to="/apply"
-					className="pointer-events-auto interactive relative inline-flex min-h-11 min-w-11 items-center justify-center px-3 transition-colors after:absolute after:bottom-1.5 after:left-2 after:right-2 after:h-px after:origin-left after:scale-x-0 after:bg-ink/50 after:transition-transform after:duration-300 hover:text-ink hover:after:scale-x-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded-sm"
+					className="pointer-events-auto btn-marketing-primary min-w-[6.5rem] px-5"
 				>
 					Apply
 				</Link>
 				<Link
 					to="/login"
-					className="pointer-events-auto interactive relative inline-flex min-h-11 min-w-11 items-center justify-center px-3 transition-colors after:absolute after:bottom-1.5 after:left-2 after:right-2 after:h-px after:origin-left after:scale-x-0 after:bg-ink/50 after:transition-transform after:duration-300 hover:text-ink hover:after:scale-x-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded-sm"
+					className="pointer-events-auto btn-marketing-outline min-h-11 border-ink/35 bg-bg/55 px-4 py-3 backdrop-blur-sm min-w-[6.5rem]"
 				>
 					Sign in
 				</Link>

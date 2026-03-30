@@ -9,13 +9,13 @@
 
 ## Learned Workspace Facts
 
-- App stack is Vite, React 19, and Tailwind; Supabase supplies auth and data with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` wired through `src/lib/supabase.ts`.
+- App stack is Vite, React 19, and Tailwind; Supabase supplies auth and data through `src/lib/supabase.ts`, preferring `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` and falling back to `NEXT_PUBLIC_SUPABASE_*` (and publishable-key names) so Vercel’s Supabase integration env vars work without duplicating keys under `VITE_*`.
 - Repository includes `supabase/` with CLI `config.toml`, SQL migrations, and Postgres 17 settings; database workflows use `bun run db:*` scripts (start/stop/reset/push).
 - Do not use `createClient` with the hand-written `Database` type in `src/types/database.ts` until generated types match the live schema; that shape breaks Supabase query-builder typing. Use `bun run db:types` (local Supabase) to emit `src/types/supabase.gen.ts`, then wire the client to generated types when ready.
 - Admin access is a row in `public.user_roles` (role `admin`) keyed by the user’s Auth UUID—grant via SQL Editor (`insert` / `delete`), not Auth metadata alone; refresh the session after changes.
 - Member roster and headshots: run `bun run roster:import` to regenerate `public/headshots` and `src/data/roster-w26.ts` from the W26 spreadsheet and headshot RAWs; adjust `HEADSHOT_INDEX_OVERRIDES` in `scripts/import-roster.ts` when a face maps to the wrong source image.
 - `bun run lint` runs `tsc --noEmit` plus Biome; Vitest and Playwright cover unit/E2E per package scripts; set `VITE_SITE_URL` in production builds for Open Graph and canonical URLs.
-- Fonts load via `index.html` (preconnect + stylesheet link), not a CSS `@import` chain; portal/auth title rhythm uses `.type-portal-title`, `.type-auth-title`, and `.type-auth-state-title` in `src/index.css`.
+- Playfair and Inter load via `@fontsource/*` imports in `src/main.tsx` (Latin subsets); keep typography out of Google Fonts `<link>` tags in `index.html` and out of CSS `@import` chains; portal/auth title rhythm uses `.type-portal-title`, `.type-auth-title`, and `.type-auth-state-title` in `src/index.css`.
 - Dense admin or data-heavy portal screens (e.g. Role administration) use `.type-portal-title-sans` in `src/index.css` for Inter at the same scale as `.type-portal-title` instead of Playfair.
 - Applicants upload a required headshot to the private Storage bucket `application-headshots`; persist `headshotPath` in `applications.answers` and use signed URLs for preview and reviewer cards (`src/lib/application-headshot-storage.ts`).
 - shadcn-style shared primitives live under repo-root `components/ui/` and `lib/utils.ts` with `@/*` mapped to the project root (alongside `src/` app code), matching typical shadcn CLI import paths.

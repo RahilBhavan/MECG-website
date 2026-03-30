@@ -1,5 +1,6 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 import { type SimpleIcon, siGeneralmotors, siIntuit } from "simple-icons";
 
@@ -148,20 +149,20 @@ export default function ImpactSection() {
 				<div className="mx-auto mb-3 flex max-w-7xl justify-end gap-2 px-6">
 					<button
 						type="button"
-						className="inline-flex min-h-11 min-w-11 items-center justify-center rounded border border-border text-technical text-muted transition-colors hover:border-ink hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+						className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded border border-border text-technical text-muted transition-colors hover:border-[var(--color-marketing-cta)]/50 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 						aria-controls="impact-case-scroll"
 						onClick={() => scrollStrip(-1)}
 					>
-						<span aria-hidden>←</span>
+						<ChevronLeft className="h-5 w-5" aria-hidden />
 						<span className="sr-only">Show previous case studies</span>
 					</button>
 					<button
 						type="button"
-						className="inline-flex min-h-11 min-w-11 items-center justify-center rounded border border-border text-technical text-muted transition-colors hover:border-ink hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+						className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded border border-border text-technical text-muted transition-colors hover:border-[var(--color-marketing-cta)]/50 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 						aria-controls="impact-case-scroll"
 						onClick={() => scrollStrip(1)}
 					>
-						<span aria-hidden>→</span>
+						<ChevronRight className="h-5 w-5" aria-hidden />
 						<span className="sr-only">Show next case studies</span>
 					</button>
 				</div>

@@ -15,6 +15,20 @@
 	--tracking-portal-title: 0.02em;
 	--tracking-technical: 0.11em;
 	--radius-panel: 0.125rem;
+	/* Marketing / landing — CTA uses same copper accent as primary actions */
+	--radius-marketing: 0.5rem;
+	--color-marketing-cta: var(--color-accent);
+	--color-marketing-cta-hover: var(--color-accent-hover);
+	--color-marketing-cta-foreground: var(--color-primary-foreground);
+	--color-marketing-cta-muted: color-mix(
+		in srgb,
+		var(--color-marketing-cta) 22%,
+		transparent
+	);
+	--shadow-marketing-md: 0 10px 40px -12px rgb(0 0 0 / 0.55);
+	--shadow-marketing-lg: 0 24px 60px -20px rgb(0 0 0 / 0.65);
+	--space-marketing-section: 2rem;
+	--space-marketing-hero-pad: 4rem;
 
 	/* Surfaces — dark-first editorial base (lifted for a fresher, less OLED-flat read) */
 	--color-bg: #111111;
@@ -59,11 +73,11 @@
 	--color-input: #404040;
 	--color-ring: #e8e8e8;
 
-	/* Hero static mesh — mirrors accent-muted wash, no raw RGB in TSX */
+	/* Hero static mesh — copper wash + faint accent (editorial luxe) */
 	--color-hero-radial-mid: color-mix(
 		in srgb,
-		var(--color-accent-muted) 30%,
-		transparent
+		var(--color-accent-muted) 28%,
+		color-mix(in srgb, var(--color-marketing-cta) 12%, transparent) 100%
 	);
 }
 
@@ -207,10 +221,74 @@ button:focus:not(:focus-visible) {
 /* Slightly larger floor + tighter tracking so the hero reads first on large screens */
 .type-marketing-hero {
 	font-family: var(--font-display);
-	font-size: clamp(4.25rem, 13vw, 13rem);
+	font-size: clamp(3rem, 12vw, 12rem);
+	font-weight: 800;
 	line-height: 0.82;
-	letter-spacing: -0.045em;
+	letter-spacing: -0.05em;
 	text-transform: uppercase;
+}
+
+/* Primary marketing CTA — landing only; avoid layout-shift hovers (color/shadow only). */
+.btn-marketing-primary {
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 2.75rem;
+	padding: 0.75rem 1.5rem;
+	font-family: var(--font-sans);
+	font-size: 0.6875rem;
+	font-weight: 600;
+	letter-spacing: var(--tracking-technical);
+	text-transform: uppercase;
+	color: var(--color-marketing-cta-foreground);
+	background-color: var(--color-marketing-cta);
+	border-radius: var(--radius-marketing);
+	border: 1px solid transparent;
+	box-shadow: var(--shadow-marketing-md);
+	transition:
+		background-color 0.2s ease,
+		color 0.2s ease,
+		box-shadow 0.2s ease,
+		border-color 0.2s ease;
+}
+
+.btn-marketing-primary:hover {
+	background-color: var(--color-marketing-cta-hover);
+	box-shadow: var(--shadow-marketing-lg);
+}
+
+.btn-marketing-primary:focus-visible {
+	outline: 2px solid var(--color-focus-ring);
+	outline-offset: 2px;
+}
+
+/* Outline / ghost for dark backgrounds — Sign in, secondary */
+.btn-marketing-outline {
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 2.75rem;
+	padding: 0.75rem 1.25rem;
+	font-family: var(--font-sans);
+	font-size: 0.6875rem;
+	font-weight: 600;
+	letter-spacing: var(--tracking-technical);
+	text-transform: uppercase;
+	color: var(--color-ink);
+	background-color: transparent;
+	border-radius: var(--radius-marketing);
+	border: 1px solid var(--color-border-strong);
+	transition:
+		border-color 0.2s ease,
+		color 0.2s ease,
+		background-color 0.2s ease;
+}
+
+.btn-marketing-outline:hover {
+	border-color: var(--color-ink);
+	background-color: color-mix(in srgb, var(--color-ink) 6%, transparent);
 }
 
 /* Section titles — use under [nn] kickers on the landing page */
@@ -288,42 +366,4 @@ html.lenis body {
 
 .lenis.lenis-smooth iframe {
 	pointer-events: none;
-}
-
-/* Skip to main: hidden until keyboard focus */
-.skip-link {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	clip-path: inset(50%);
-	white-space: nowrap;
-	border: 0;
-}
-
-.skip-link:focus {
-	position: fixed;
-	left: 1rem;
-	top: 1rem;
-	z-index: 200;
-	width: auto;
-	height: auto;
-	margin: 0;
-	padding: 0.5rem 1rem;
-	overflow: visible;
-	clip: auto;
-	clip-path: none;
-	white-space: normal;
-	background-color: var(--color-surface);
-	color: var(--color-ink);
-	border: 1px solid var(--color-border);
-	font-family: var(--font-sans);
-	font-size: 0.8125rem;
-	font-weight: 500;
-	letter-spacing: var(--tracking-technical);
-	text-transform: uppercase;
-	text-decoration: none;
 }

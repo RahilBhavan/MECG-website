@@ -8,6 +8,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { Link } from "react-router-dom";
 
 import type { HeroWebGLCanvasProps } from "@/src/components/hero-section-webgl";
 import PublicHeader from "@/src/components/PublicHeader";
@@ -190,7 +191,8 @@ export default function HeroSection({ onScrollToImpact }: HeroSectionProps) {
 					>
 						<span className="hero-enter-line block">STRATEGY,</span>
 						<span className="hero-enter-line block">
-							BY DESIGN<span className="text-accent">.</span>
+							BY DESIGN
+							<span className="text-[var(--color-marketing-cta)]">.</span>
 						</span>
 					</h1>
 					<p
@@ -200,16 +202,21 @@ export default function HeroSection({ onScrollToImpact }: HeroSectionProps) {
 						MULTIFACETED. DRIVEN. INCLUSIVE.
 					</p>
 					{onScrollToImpact ? (
-						<div className="pointer-events-auto mt-10 sm:mt-12">
+						<div className="pointer-events-auto mt-10 flex flex-col items-center gap-3 sm:mt-12 sm:flex-row sm:justify-center">
+							<Link
+								to="/signup"
+								className="btn-marketing-primary min-h-11 min-w-[12rem] px-8 text-center"
+							>
+								Start your application
+							</Link>
 							<motion.button
 								type="button"
 								onClick={onScrollToImpact}
-								whileHover={reduceMotion ? undefined : { y: -3 }}
 								whileTap={reduceMotion ? undefined : { scale: 0.98 }}
 								transition={{ type: "spring", stiffness: 400, damping: 28 }}
-								className="text-technical text-muted hover:bg-accent-muted/25 hover:text-accent min-h-11 rounded-sm border border-border bg-bg/50 px-6 py-3 backdrop-blur-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+								className="text-technical text-muted hover:text-accent min-h-11 rounded-[var(--radius-marketing)] border border-border-strong bg-bg/55 px-6 py-3 backdrop-blur-sm transition-[color,box-shadow,border-color] duration-200 hover:border-accent/40 hover:shadow-[var(--shadow-marketing-md)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring cursor-pointer"
 							>
-								Continue to impact
+								Explore the firm
 							</motion.button>
 						</div>
 					) : null}

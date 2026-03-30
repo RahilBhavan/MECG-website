@@ -80,7 +80,7 @@ export default function AppShell() {
 
 	return (
 		<div className="min-h-screen bg-bg text-ink cursor-auto">
-			<header className="sticky top-0 z-40 border-b border-border bg-bg-raised/90 backdrop-blur-md px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+			<header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b border-border-strong bg-bg-raised/92 px-4 py-3 shadow-[0_10px_36px_-20px_rgba(0,0,0,0.55)] backdrop-blur-md sm:px-6">
 				<div className="flex items-center gap-3 min-w-0 flex-1">
 					<Link
 						to={home}
@@ -207,13 +207,13 @@ export default function AppShell() {
 				{hint ? (
 					<div
 						role="status"
-						className="mb-8 flex flex-col sm:flex-row sm:items-center gap-3 border border-border px-4 py-3 text-technical text-muted text-sm"
+						className="mb-8 flex flex-col gap-3 rounded-lg border border-border-strong bg-surface/25 px-4 py-4 text-sm text-technical text-muted sm:flex-row sm:items-center"
 					>
-						<p className="flex-1">{hint}</p>
+						<p className="flex-1 leading-relaxed">{hint}</p>
 						<button
 							type="button"
 							onClick={dismissHint}
-							className="shrink-0 border border-border px-3 py-2 min-h-11 hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+							className="min-h-11 shrink-0 cursor-pointer rounded-md border border-border px-4 py-2 text-technical transition-colors hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 						>
 							Dismiss
 						</button>

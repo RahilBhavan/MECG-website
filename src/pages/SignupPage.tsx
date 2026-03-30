@@ -2,6 +2,7 @@ import { Check, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/src/auth/AuthProvider";
 import { classifySignUpAuthError } from "@/src/lib/auth-errors";
 import { focusFormControl } from "@/src/lib/focus-form-control";
@@ -81,7 +82,7 @@ export default function SignupPage() {
 	if (successPanel) {
 		return (
 			<div className="min-h-screen bg-bg text-ink flex flex-col items-center justify-center px-6">
-				<div className="w-full max-w-md rounded-sm border border-success/50 bg-success-bg/25 p-8 space-y-6">
+				<div className="w-full max-w-md space-y-6 rounded-lg border border-success/50 bg-success-bg/25 p-8 shadow-[var(--shadow-marketing-md)]">
 					<div className="flex items-center gap-3">
 						<span className="flex h-10 w-10 items-center justify-center rounded-full border border-success/60">
 							<Check className="h-5 w-5 text-success" aria-hidden />
@@ -96,12 +97,9 @@ export default function SignupPage() {
 						<li>Confirm your account, then return here to sign in.</li>
 						<li>If you don&apos;t see it, check spam or promotions.</li>
 					</ul>
-					<Link
-						to="/login"
-						className="block w-full text-center border border-accent py-3 min-h-11 text-technical text-accent hover:bg-accent hover:text-bg transition-colors"
-					>
-						Back to sign in
-					</Link>
+					<Button asChild className="w-full" size="lg">
+						<Link to="/login">Back to sign in</Link>
+					</Button>
 					<Link
 						to="/"
 						className="block text-center text-technical text-muted hover:text-ink"
@@ -115,7 +113,7 @@ export default function SignupPage() {
 
 	return (
 		<div className="min-h-screen bg-bg text-ink flex flex-col items-center justify-center px-6">
-			<div className="w-full max-w-md rounded-sm border border-border bg-surface/40 p-8 space-y-6">
+			<div className="w-full max-w-md space-y-6 rounded-lg border border-border-strong bg-surface/30 p-8 shadow-[var(--shadow-marketing-md)]">
 				<h1 className="type-auth-title">Create account</h1>
 				<p className="text-technical text-muted">
 					New accounts receive the applicant role by default. Alumni, reviewer,
@@ -154,7 +152,7 @@ export default function SignupPage() {
 										? "signup-display-name-error"
 										: undefined
 							}
-							className="w-full bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
+							className="w-full rounded-md border border-border bg-transparent px-3 py-2 font-sans outline-none focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
 						/>
 						{displayNameError ? (
 							<span
@@ -184,7 +182,7 @@ export default function SignupPage() {
 										? "signup-email-error"
 										: undefined
 							}
-							className="w-full bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
+							className="w-full rounded-md border border-border bg-transparent px-3 py-2 font-sans outline-none focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
 						/>
 						{signUpEmailError ? (
 							<span id="signup-email-error" className="text-xs text-danger">
@@ -219,7 +217,7 @@ export default function SignupPage() {
 											? "signup-password-error"
 											: "signup-password-hint"
 								}
-								className="flex-1 min-w-0 bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
+								className="min-w-0 flex-1 rounded-md border border-border bg-transparent px-3 py-2 font-sans outline-none focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
 							/>
 							<button
 								type="button"
@@ -227,7 +225,7 @@ export default function SignupPage() {
 								aria-label={showPassword ? "Hide password" : "Show password"}
 								onClick={() => setShowPassword((v) => !v)}
 								disabled={pending}
-								className="shrink-0 min-h-11 min-w-11 border border-border flex items-center justify-center hover:border-ink disabled:opacity-50"
+								className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-md border border-border outline-none hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
 							>
 								{showPassword ? (
 									<EyeOff className="h-5 w-5" aria-hidden />
@@ -259,11 +257,7 @@ export default function SignupPage() {
 							</pre>
 						</details>
 					) : null}
-					<button
-						type="submit"
-						disabled={pending}
-						className="w-full border border-accent py-3 min-h-11 text-technical text-accent hover:bg-accent hover:text-bg transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2"
-					>
+					<Button type="submit" disabled={pending} className="w-full" size="lg">
 						{pending ? (
 							<>
 								<Loader2 className="h-4 w-4 animate-spin" aria-hidden />
@@ -272,7 +266,7 @@ export default function SignupPage() {
 						) : (
 							"Sign up"
 						)}
-					</button>
+					</Button>
 				</form>
 				<p className="text-technical text-muted text-center">
 					Already have an account?{" "}

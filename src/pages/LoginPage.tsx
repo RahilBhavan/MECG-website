@@ -2,6 +2,7 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 
+import { Button } from "@/components/ui/button";
 import { getPostLoginPath, useAuth } from "@/src/auth/AuthProvider";
 import {
 	classifyLoginAuthError,
@@ -114,7 +115,7 @@ export default function LoginPage() {
 	if (forgotMode) {
 		return (
 			<div className="min-h-screen bg-bg text-ink flex flex-col items-center justify-center px-6">
-				<div className="w-full max-w-md rounded-sm border border-border bg-surface/40 p-8 space-y-6">
+				<div className="w-full max-w-md space-y-6 rounded-lg border border-border-strong bg-surface/30 p-8 shadow-[var(--shadow-marketing-md)]">
 					<h1 className="type-auth-title">Reset password</h1>
 					<p className="text-technical text-muted">
 						We&apos;ll email you a link to choose a new password. Add{" "}
@@ -143,7 +144,7 @@ export default function LoginPage() {
 									aria-describedby={
 										forgotError ? "forgot-email-error" : undefined
 									}
-									className="w-full bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
+									className="w-full rounded-md border border-border bg-transparent px-3 py-2 font-sans outline-none focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
 								/>
 							</label>
 							{forgotError ? (
@@ -200,7 +201,7 @@ export default function LoginPage() {
 
 	return (
 		<div className="min-h-screen bg-bg text-ink flex flex-col items-center justify-center px-6">
-			<div className="w-full max-w-md rounded-sm border border-border bg-surface/40 p-8 space-y-6">
+			<div className="w-full max-w-md space-y-6 rounded-lg border border-border-strong bg-surface/30 p-8 shadow-[var(--shadow-marketing-md)]">
 				<h1 className="type-auth-title">Sign in</h1>
 				<p className="text-technical text-muted">
 					Access is controlled by roles assigned in Supabase (applicant, alumni,
@@ -239,7 +240,7 @@ export default function LoginPage() {
 										? "login-email-error"
 										: undefined
 							}
-							className="w-full bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
+							className="w-full rounded-md border border-border bg-transparent px-3 py-2 font-sans outline-none focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
 						/>
 						{loginEmailError ? (
 							<span id="login-email-error" className="text-xs text-danger">
@@ -273,7 +274,7 @@ export default function LoginPage() {
 											? "login-password-error"
 											: undefined
 								}
-								className="flex-1 min-w-0 bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
+								className="min-w-0 flex-1 rounded-md border border-border bg-transparent px-3 py-2 font-sans outline-none focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
 							/>
 							<button
 								type="button"
@@ -281,7 +282,7 @@ export default function LoginPage() {
 								aria-label={showPassword ? "Hide password" : "Show password"}
 								onClick={() => setShowPassword((v) => !v)}
 								disabled={pending}
-								className="shrink-0 min-h-11 min-w-11 border border-border flex items-center justify-center hover:border-ink disabled:opacity-50"
+								className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-md border border-border outline-none hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
 							>
 								{showPassword ? (
 									<EyeOff className="h-5 w-5" aria-hidden />
@@ -306,11 +307,7 @@ export default function LoginPage() {
 							</pre>
 						</details>
 					) : null}
-					<button
-						type="submit"
-						disabled={pending}
-						className="w-full border border-accent py-3 min-h-11 text-technical text-accent hover:bg-accent hover:text-bg transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2"
-					>
+					<Button type="submit" disabled={pending} className="w-full" size="lg">
 						{pending ? (
 							<>
 								<Loader2 className="h-4 w-4 animate-spin" aria-hidden />
@@ -319,7 +316,7 @@ export default function LoginPage() {
 						) : (
 							"Sign in"
 						)}
-					</button>
+					</Button>
 				</form>
 				<div className="flex flex-col gap-2 text-center text-technical text-sm">
 					<button

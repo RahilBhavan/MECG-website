@@ -17,26 +17,28 @@ type LandingSubNavProps = {
 
 export function LandingSubNav({ onNavigate }: LandingSubNavProps) {
 	return (
-		<nav
-			aria-label="Page sections"
-			className="sticky top-0 z-20 border-b border-border bg-bg/90 backdrop-blur-md px-4 py-2 sm:px-6"
-		>
-			<ul className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-1 sm:gap-2 md:justify-start">
-				{NAV_ITEMS.map(({ id, label }) => (
-					<li key={id}>
-						<a
-							href={`#${id}`}
-							className="text-technical text-muted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring inline-flex min-h-11 min-w-11 items-center justify-center rounded px-3 py-2 transition-[color,transform] duration-200 [@media(pointer:fine)]:hover:scale-[1.03]"
-							onClick={(e) => {
-								e.preventDefault();
-								onNavigate(id);
-							}}
-						>
-							{label}
-						</a>
-					</li>
-				))}
-			</ul>
-		</nav>
+		<div className="sticky top-3 z-20 px-3 sm:top-4 sm:px-4 scroll-mt-4">
+			<nav
+				aria-label="Page sections"
+				className="mx-auto max-w-7xl rounded-lg border border-border-strong bg-bg/92 py-2 shadow-[0_12px_40px_-24px_rgba(0,0,0,0.75)] backdrop-blur-md supports-[backdrop-filter]:bg-bg/85"
+			>
+				<ul className="flex max-w-7xl flex-wrap items-center justify-center gap-0.5 px-2 sm:gap-1 sm:px-4 md:justify-start">
+					{NAV_ITEMS.map(({ id, label }) => (
+						<li key={id}>
+							<a
+								href={`#${id}`}
+								className="text-technical text-muted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring cursor-pointer inline-flex min-h-11 min-w-11 items-center justify-center rounded-md px-3 py-2 transition-colors duration-200"
+								onClick={(e) => {
+									e.preventDefault();
+									onNavigate(id);
+								}}
+							>
+								{label}
+							</a>
+						</li>
+					))}
+				</ul>
+			</nav>
+		</div>
 	);
 }

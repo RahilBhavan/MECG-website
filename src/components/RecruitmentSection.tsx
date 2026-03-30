@@ -1,4 +1,5 @@
-import { useRef, useState } from "react";
+import { ChevronDown } from "lucide-react";
+import { useId, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { useBalancedTextMaxWidth } from "@/src/hooks/use-balanced-text-max-width";
@@ -47,6 +48,7 @@ const faqs = [
 ];
 
 export default function RecruitmentSection() {
+	const faqGroupId = useId();
 	const [openFaq, setOpenFaq] = useState<number | null>(null);
 	const pitchRef = useRef<HTMLDivElement>(null);
 	const balancedPitchMaxWidthPx = useBalancedTextMaxWidth({
@@ -95,14 +97,20 @@ export default function RecruitmentSection() {
 					>
 						{RECRUITMENT_PITCH_COPY}
 					</p>
-					<p className="reveal-up mt-8">
+					<div className="reveal-up mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
 						<Link
-							to="/apply"
-							className="inline-block border border-accent px-6 py-3 text-technical text-accent hover:bg-accent hover:text-bg transition-colors"
+							to="/signup"
+							className="btn-marketing-primary w-full sm:w-auto"
 						>
-							Open application portal
+							Create account to apply
 						</Link>
-					</p>
+						<Link
+							to="/login"
+							className="btn-marketing-outline w-full border-accent/35 bg-surface/30 sm:w-auto"
+						>
+							Already recruiting? Sign in
+						</Link>
+					</div>
 				</div>
 			</div>
 
@@ -121,24 +129,22 @@ export default function RecruitmentSection() {
 							{timelineEvents.map((event, i) => (
 								<div
 									key={i}
-									className="recruit-timeline-row group flex flex-col items-start justify-between gap-3 border-b border-border px-4 py-6 transition-colors hover:bg-ink/5 lg:flex-row lg:items-baseline lg:gap-0"
+									className="recruit-timeline-row group relative flex flex-col items-start justify-between gap-3 border-b border-border px-4 py-6 transition-colors hover:bg-ink/[0.04] lg:flex-row lg:items-baseline lg:gap-0"
 								>
+									<div
+										aria-hidden
+										className="pointer-events-none absolute left-0 top-0 bottom-0 w-0.5 bg-transparent transition-colors duration-200 group-hover:bg-[var(--color-marketing-cta)]/70"
+									/>
 									<div className="mb-0 w-32 shrink-0 text-technical text-muted transition-colors group-hover:text-ink">
 										{event.date}
 									</div>
-									<div className="min-w-0 flex-1 text-xl font-display tracking-wide md:text-2xl">
+									<div className="min-w-0 flex-1 text-xl font-display tracking-wide text-ink-secondary md:text-2xl">
 										{event.name}
 									</div>
-									<div className="flex w-full items-center justify-between gap-4 lg:w-auto lg:justify-end">
-										<span className="text-technical text-muted text-right">
+									<div className="w-full lg:w-auto lg:text-right">
+										<span className="text-technical text-muted">
 											{event.location}
 										</span>
-										<button
-											type="button"
-											className="text-technical text-ink hover:text-muted transition-colors whitespace-nowrap"
-										>
-											[+] Calendar
-										</button>
 									</div>
 								</div>
 							))}
@@ -154,35 +160,46 @@ export default function RecruitmentSection() {
 							QUESTIONS
 						</h2>
 
-						<div className="flex flex-col border-t border-border">
-							{faqs.map((faq, i) => (
-								<div key={i} className="reveal-up border-b border-border">
-									<button
-										type="button"
-										onClick={() => toggleFaq(i)}
-										className="w-full flex justify-between items-center py-8 px-4 hover:bg-ink/5 transition-colors text-left"
-									>
-										<span className="text-xl md:text-2xl font-display tracking-wide">
-											{faq.q}
-										</span>
-										<span className="text-technical text-muted">
-											{openFaq === i ? "[-]" : "[+]"}
-										</span>
-									</button>
-									<div
-										className={`overflow-hidden transition-all duration-300 ease-in-out px-4 ${
-											openFaq === i
-												? "max-h-40 pb-8 opacity-100"
-												: "max-h-0 opacity-0"
-										}`}
-									>
-										<p className="text-muted font-sans font-light leading-relaxed max-w-3xl">
-											{faq.a}
-										</p>
+						<section
+							className="flex flex-col border-t border-border"
+							aria-label="Frequently asked questions"
+						>
+							{faqs.map((faq, i) => {
+								const panelId = `${faqGroupId}-panel-${i}`;
+								const headerId = `${faqGroupId}-header-${i}`;
+								const isOpen = openFaq === i;
+								return (
+									<div key={i} className="reveal-up border-b border-border">
+										<h3 className="font-display text-xl md:text-2xl tracking-wide">
+											<button
+												type="button"
+												id={headerId}
+												aria-expanded={isOpen}
+												aria-controls={panelId}
+												onClick={() => toggleFaq(i)}
+												className="flex w-full cursor-pointer items-start justify-between gap-4 py-8 px-4 text-left transition-colors hover:bg-ink/[0.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+											>
+												<span className="min-w-0 flex-1">{faq.q}</span>
+												<ChevronDown
+													className={`mt-1 h-5 w-5 shrink-0 text-muted transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+													aria-hidden
+												/>
+											</button>
+										</h3>
+										<section
+											id={panelId}
+											aria-labelledby={headerId}
+											hidden={!isOpen}
+											className="border-t border-border/60 bg-bg/40 px-4 pb-8 pt-4"
+										>
+											<p className="max-w-3xl font-sans font-light leading-relaxed text-muted">
+												{faq.a}
+											</p>
+										</section>
 									</div>
-								</div>
-							))}
-						</div>
+								);
+							})}
+						</section>
 					</div>
 				</div>
 			</div>
