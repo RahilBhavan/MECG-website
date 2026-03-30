@@ -1,200 +1,243 @@
-import { useEffect, useRef, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Environment, Float } from '@react-three/drei';
-import * as THREE from 'three';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { motion } from "motion/react";
+import {
+	type ComponentType,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState,
+} from "react";
+
+import type { HeroWebGLCanvasProps } from "@/src/components/hero-section-webgl";
+import PublicHeader from "@/src/components/PublicHeader";
+import { getPrefersReducedMotion } from "@/src/lib/motion-preference";
 
 gsap.registerPlugin(ScrollTrigger);
 
-function DataNetwork() {
-  const groupRef = useRef<THREE.Group>(null);
+type HeroWebGLCanvasComponent = ComponentType<HeroWebGLCanvasProps>;
 
-  useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.x = state.clock.elapsedTime * 0.1;
-      groupRef.current.rotation.y = state.clock.elapsedTime * 0.15;
-    }
-  });
+function scheduleHeroWebGLImport(
+	onReady: (C: HeroWebGLCanvasComponent) => void,
+): () => void {
+	let cancelled = false;
+	const load = () => {
+		void import("@/src/components/hero-section-webgl").then((m) => {
+			if (!cancelled) onReady(m.HeroWebGLCanvas);
+		});
+	};
 
-  const nodeCount = 60;
-  const { nodes, lineGeometry } = useMemo(() => {
-    const pts = [];
-    for (let i = 0; i < nodeCount; i++) {
-      const r = 1.2 + Math.random() * 1.5;
-      const theta = Math.random() * 2 * Math.PI;
-      const phi = Math.acos(2 * Math.random() - 1);
-      const x = r * Math.sin(phi) * Math.cos(theta);
-      const y = r * Math.sin(phi) * Math.sin(theta);
-      const z = r * Math.cos(phi);
-      pts.push(new THREE.Vector3(x, y, z));
-    }
-
-    const linePts = [];
-    for (let i = 0; i < nodeCount; i++) {
-      for (let j = i + 1; j < nodeCount; j++) {
-        if (pts[i].distanceTo(pts[j]) < 1.6) {
-          linePts.push(pts[i], pts[j]);
-        }
-      }
-    }
-    const geom = new THREE.BufferGeometry().setFromPoints(linePts);
-    return { nodes: pts, lineGeometry: geom };
-  }, []);
-
-  return (
-    <Float speed={2} rotationIntensity={1} floatIntensity={2}>
-      <group ref={groupRef}>
-        {nodes.map((pos, i) => (
-          <mesh key={i} position={pos}>
-            <sphereGeometry args={[0.04, 16, 16]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.2} metalness={0.8} emissive="#333333" />
-          </mesh>
-        ))}
-        <lineSegments geometry={lineGeometry}>
-          <lineBasicMaterial color="#555555" transparent opacity={0.4} />
-        </lineSegments>
-        
-        {/* Central Core */}
-        <mesh>
-          <icosahedronGeometry args={[0.8, 1]} />
-          <meshStandardMaterial color="#222222" wireframe transparent opacity={0.3} />
-        </mesh>
-        <mesh>
-          <sphereGeometry args={[0.6, 32, 32]} />
-          <meshStandardMaterial color="#0a0a0a" roughness={0.5} metalness={1} />
-        </mesh>
-      </group>
-    </Float>
-  );
+	const ric = window.requestIdleCallback?.(load, { timeout: 2800 });
+	if (ric == null) {
+		queueMicrotask(load);
+		return () => {
+			cancelled = true;
+		};
+	}
+	return () => {
+		cancelled = true;
+		window.cancelIdleCallback?.(ric);
+	};
 }
 
-export default function HeroSection() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const canvasContainerRef = useRef<HTMLDivElement>(null);
-  const svgRef = useRef<SVGSVGElement>(null);
+type HeroSectionProps = {
+	/** Scrolls to the first main section (Impact); uses parent Lenis offset when present. */
+	onScrollToImpact?: () => void;
+};
 
-  useEffect(() => {
-    if (!svgRef.current) return;
-    
-    const lines = svgRef.current.querySelectorAll('.tech-line');
-    
-    // Set initial state
-    gsap.set(lines, { strokeDasharray: 1000, strokeDashoffset: 1000 });
-    
-    // Animate lines drawing in
-    gsap.to(lines, {
-      strokeDashoffset: 0,
-      duration: 2,
-      ease: 'power3.inOut',
-      stagger: 0.2,
-      delay: 0.5,
-    });
+export default function HeroSection({ onScrollToImpact }: HeroSectionProps) {
+	const sectionRef = useRef<HTMLElement>(null);
+	const canvasContainerRef = useRef<HTMLDivElement>(null);
+	const h1Ref = useRef<HTMLHeadingElement>(null);
+	const subcopyRef = useRef<HTMLParagraphElement>(null);
+	const scrollProgressRef = useRef<number>(0);
+	const [reduceMotion, setReduceMotion] = useState(() =>
+		getPrefersReducedMotion(),
+	);
+	const [WebGLCanvas, setWebGLCanvas] =
+		useState<HeroWebGLCanvasComponent | null>(null);
 
-    // Parallax Effects
-    if (sectionRef.current && canvasContainerRef.current && svgRef.current) {
-      // Move the 3D canvas down slightly as we scroll
-      gsap.to(canvasContainerRef.current, {
-        yPercent: 30,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top top',
-          end: 'bottom top',
-          scrub: true,
-        },
-      });
+	useEffect(() => {
+		const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+		const onChange = () => setReduceMotion(mq.matches);
+		mq.addEventListener("change", onChange);
+		return () => mq.removeEventListener("change", onChange);
+	}, []);
 
-      // Move the SVG annotations up slightly as we scroll
-      gsap.to(svgRef.current, {
-        yPercent: -15,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top top',
-          end: 'bottom top',
-          scrub: true,
-        },
-      });
-    }
-  }, []);
+	useEffect(() => {
+		if (reduceMotion) {
+			setWebGLCanvas(null);
+			return;
+		}
+		// Must wrap: passing a function to setState is interpreted as an updater, not a component ref.
+		return scheduleHeroWebGLImport((C) => setWebGLCanvas(() => C));
+	}, [reduceMotion]);
 
-  return (
-    <section ref={sectionRef} className="relative w-full h-screen flex flex-col justify-center items-center overflow-hidden">
-      {/* 3D Canvas Background */}
-      <div ref={canvasContainerRef} className="absolute inset-0 z-0">
-        <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
-          <ambientLight intensity={0.5} />
-          <directionalLight position={[10, 10, 5]} intensity={1} />
-          <DataNetwork />
-          <Environment preset="city" />
-        </Canvas>
-      </div>
+	useLayoutEffect(() => {
+		if (reduceMotion) return;
+		const h1 = h1Ref.current;
+		const sub = subcopyRef.current;
+		if (!h1) return;
 
-      {/* SVG Annotations */}
-      <svg ref={svgRef} className="absolute inset-0 w-full h-full pointer-events-none z-10">
-        <defs>
-          <marker id="dot" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4">
-            <circle cx="5" cy="5" r="5" className="tech-node" />
-          </marker>
-        </defs>
-        {/* Strategy Line */}
-        <polyline
-          points="15%,20% 30%,20% 40%,35%"
-          className="tech-line"
-          markerStart="url(#dot)"
-          markerEnd="url(#dot)"
-        />
-        {/* Entertainment Line */}
-        <polyline
-          points="85%,30% 70%,30% 60%,40%"
-          className="tech-line"
-          markerStart="url(#dot)"
-          markerEnd="url(#dot)"
-        />
-        {/* Data Analytics Line */}
-        <polyline
-          points="20%,80% 35%,80% 45%,65%"
-          className="tech-line"
-          markerStart="url(#dot)"
-          markerEnd="url(#dot)"
-        />
-      </svg>
+		const lines = h1.querySelectorAll(".hero-enter-line");
+		const ctx = gsap.context(() => {
+			gsap.fromTo(
+				lines,
+				{ y: 36, opacity: 0 },
+				{
+					y: 0,
+					opacity: 1,
+					duration: 0.85,
+					stagger: 0.12,
+					ease: "power3.out",
+					delay: 0.15,
+				},
+			);
+			if (sub) {
+				gsap.fromTo(
+					sub,
+					{ y: 24, opacity: 0 },
+					{
+						y: 0,
+						opacity: 1,
+						duration: 0.7,
+						ease: "power3.out",
+						delay: 0.55,
+					},
+				);
+			}
+		}, h1);
 
-      {/* Content Overlay */}
-      <div className="relative z-20 w-full h-full max-w-7xl mx-auto px-6 pointer-events-none">
-        {/* Header */}
-        <header className="absolute top-8 left-6 right-6 flex justify-between items-center text-technical">
-          <div>MECG // CONSULTING</div>
-          <div className="flex gap-8">
-            <span className="pointer-events-auto interactive cursor-pointer hover:text-white transition-colors">Work</span>
-            <span className="pointer-events-auto interactive cursor-pointer hover:text-white transition-colors">About</span>
-            <span className="pointer-events-auto interactive cursor-pointer hover:text-white transition-colors">Contact</span>
-          </div>
-        </header>
+		return () => ctx.revert();
+	}, [reduceMotion]);
 
-        {/* Annotations Text */}
-        <div className="absolute top-[18%] left-[10%] text-technical">
-          [01] STRATEGY
-        </div>
-        <div className="absolute top-[28%] right-[10%] text-technical text-right">
-          ENTERTAINMENT [02]
-        </div>
-        <div className="absolute top-[78%] left-[15%] text-technical">
-          [03] DATA ANALYTICS
-        </div>
+	useEffect(() => {
+		const section = sectionRef.current;
+		if (!section || reduceMotion) return;
 
-        {/* Main Headlines */}
-        <div className="absolute inset-0 flex flex-col justify-center items-center text-center pointer-events-none">
-          <h1 className="text-massive mb-6 drop-shadow-[0_0_30px_rgba(0,0,0,0.8)] leading-none">
-            STRATEGY,<br />
-            BY DESIGN.
-          </h1>
-          <p className="text-technical max-w-md mx-auto bg-black/40 backdrop-blur-md p-4 rounded border border-white/10">
-            MULTIFACETED. DRIVEN. INCLUSIVE.
-          </p>
-        </div>
-      </div>
-    </section>
-  );
+		const ctx = gsap.context(() => {
+			const canvasEl = canvasContainerRef.current;
+			if (!canvasEl) return;
+
+			gsap.to(canvasEl, {
+				yPercent: 16,
+				ease: "none",
+				scrollTrigger: {
+					trigger: section,
+					start: "top top",
+					end: "bottom top",
+					scrub: true,
+					onUpdate: (self) => {
+						scrollProgressRef.current = self.progress;
+					},
+				},
+			});
+		}, section);
+
+		return () => {
+			ctx.revert();
+			scrollProgressRef.current = 0;
+		};
+	}, [reduceMotion]);
+
+	return (
+		<section
+			ref={sectionRef}
+			className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden"
+		>
+			{/* Warm center wash — static; WebGL (when loaded) sits above for motion users */}
+			<div
+				aria-hidden
+				className="pointer-events-none absolute inset-0 z-0 bg-bg"
+			>
+				<div className="absolute inset-0 bg-[radial-gradient(ellipse_58%_50%_at_50%_42%,var(--color-hero-radial-mid)_0%,transparent_68%)]" />
+			</div>
+			<div
+				ref={canvasContainerRef}
+				className="absolute inset-0 z-[1] h-full w-full min-h-0 min-w-0"
+			>
+				{reduceMotion ? (
+					<div
+						aria-hidden
+						className="pointer-events-none absolute inset-0 bg-bg"
+					>
+						<div className="absolute inset-0 bg-[radial-gradient(ellipse_52%_48%_at_50%_38%,var(--color-hero-radial-mid)_0%,transparent_72%)] opacity-90" />
+						<div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,var(--color-surface)_0%,transparent_55%)] opacity-40" />
+					</div>
+				) : WebGLCanvas ? (
+					<>
+						<WebGLCanvas scrollProgressRef={scrollProgressRef} />
+						<div
+							aria-hidden
+							className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-bg/50 via-bg/40 to-bg/65"
+						/>
+					</>
+				) : (
+					<div
+						aria-hidden
+						className="pointer-events-none absolute inset-0 bg-bg/55"
+					/>
+				)}
+			</div>
+
+			<div className="pointer-events-none relative z-20 mx-auto h-full w-full max-w-7xl px-4 sm:px-6">
+				<PublicHeader />
+
+				<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-2 pt-16 text-center sm:px-0 sm:pt-0">
+					<h1
+						ref={h1Ref}
+						className="type-marketing-hero mb-6 leading-none drop-shadow-[0_2px_48px_rgba(0,0,0,0.85)]"
+					>
+						<span className="hero-enter-line block">STRATEGY,</span>
+						<span className="hero-enter-line block">
+							BY DESIGN<span className="text-accent">.</span>
+						</span>
+					</h1>
+					<p
+						ref={subcopyRef}
+						className="type-marketing-kicker mx-auto max-w-md rounded border border-border-strong/60 bg-surface/70 px-5 py-4 text-ink-secondary shadow-[0_12px_40px_-20px_rgba(0,0,0,0.75)] backdrop-blur-md"
+					>
+						MULTIFACETED. DRIVEN. INCLUSIVE.
+					</p>
+					{onScrollToImpact ? (
+						<div className="pointer-events-auto mt-10 sm:mt-12">
+							<motion.button
+								type="button"
+								onClick={onScrollToImpact}
+								whileHover={reduceMotion ? undefined : { y: -3 }}
+								whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+								transition={{ type: "spring", stiffness: 400, damping: 28 }}
+								className="text-technical text-muted hover:bg-accent-muted/25 hover:text-accent min-h-11 rounded-sm border border-border bg-bg/50 px-6 py-3 backdrop-blur-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+							>
+								Continue to impact
+							</motion.button>
+						</div>
+					) : null}
+				</div>
+
+				{onScrollToImpact && !reduceMotion ? (
+					<motion.div
+						aria-hidden
+						className="pointer-events-none fixed bottom-8 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center gap-1 text-accent/65"
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 0.65 }}
+						transition={{ delay: 1.2, duration: 0.6 }}
+					>
+						<span className="type-marketing-kicker tracking-[0.2em] text-accent/80">
+							SCROLL
+						</span>
+						<motion.span
+							className="block h-6 w-px bg-accent/45"
+							animate={{ scaleY: [1, 0.35, 1], opacity: [0.5, 1, 0.5] }}
+							transition={{
+								duration: 2.2,
+								repeat: Number.POSITIVE_INFINITY,
+								ease: "easeInOut",
+							}}
+						/>
+					</motion.div>
+				) : null}
+			</div>
+		</section>
+	);
 }

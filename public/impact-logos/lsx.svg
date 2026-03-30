@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none" aria-hidden="true">
+  <rect width="80" height="80" rx="14" fill="#0a0a0a"/>
+  <text
+    x="40"
+    y="51"
+    text-anchor="middle"
+    font-family="ui-sans-serif, system-ui, sans-serif"
+    font-size="20"
+    font-weight="800"
+    fill="#ffffff"
+  >
+    <tspan>LS</tspan><tspan fill="#5eb8e8">X</tspan>
+  </text>
+</svg>

@@ -1,0 +1,20 @@
+---
+description: Safer UX patterns for auth, portal, and reviewer surfaces
+globs:
+  - "src/pages/**/*.tsx"
+  - "src/auth/**/*.tsx"
+  - "src/components/AppShell.tsx"
+  - "src/components/ProtectedRoute.tsx"
+  - "src/components/PublicHeader.tsx"
+alwaysApply: false
+---
+
+# Portal, auth, and reviewer UI
+
+- **System cursor must remain usable** — no `cursor: none` or custom cursor takeover on these routes.
+- **Keyboard first**: tab order, visible focus rings, skip links where layouts are deep.
+- **Review flow**: Pass / Maybe / Yes (and undo) must be **large enough to tap** on phones; prefer full-width stacks or chunky buttons on small breakpoints.
+- **Loading / errors**: Explicit states (skeletons in `src/components/skeletons/`, toasts via `src/components/toast/`) — no silent failures on Supabase calls.
+- **Motion**: Keep transitions **subtle**; avoid long GSAP sequences that delay decisions. If animating cards, honor `usePrefersReducedMotion()`.
+
+Marketing-only flourishes (custom cursor, heavy parallax) belong in **landing sections**, not here.

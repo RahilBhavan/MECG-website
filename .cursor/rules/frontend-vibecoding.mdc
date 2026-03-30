@@ -1,0 +1,37 @@
+---
+description: Distinctive UI, motion, and Tailwind patterns for TSX/CSS
+globs:
+  - "**/*.tsx"
+  - "**/*.css"
+alwaysApply: false
+---
+
+# Frontend vibecoding
+
+## Intent
+
+Ship **memorable**, production-grade UI — not generic “AI landing” templates. Pick a **clear aesthetic** (minimal luxe, brutal editorial, soft organic, etc.) and execute with **one strong type system**, **dominant color + sharp accent**, and **one hero motion idea** (staggered reveal, scroll choreography, tactile cards).
+
+## Typography and color
+
+- Prefer **character** over defaults: **two fonts only** — Playfair (display) + Inter (UI). Technical labels use Inter via `.text-technical` (tracked caps), not a third mono webfont. Extend via `--font-*` in `src/index.css` `@theme`.
+- Use **CSS variables** (`--color-bg`, `--color-ink`, `--color-muted`, etc.) for cohesion; add new tokens in `@theme` when scaling the system.
+
+## Motion (deps on hand)
+
+- **`motion`**: component-level springs, layout, gestures.
+- **`gsap`**: timelines, ScrollTrigger-style hero narratives (gate behind reduced-motion).
+- **`@studio-freight/lenis`**: smooth scroll on marketing only; **disable or no-op** when `prefers-reduced-motion: reduce`.
+
+## Composition
+
+- Functional components; extract hooks for scroll/animation/session state.
+- Use `clsx` + `tailwind-merge` for conditional classes when utilities collide.
+- **Spatial interest**: asymmetry, overlap, grid breaks, or generous whitespace — pick one lane and commit.
+
+## Anti-patterns
+
+- Purple-gradient-on-white clichés, cookie-cutter three-column feature grids with no brand tie-in.
+- Animations that obscure **review verdicts**, **forms**, or **auth** — clarity beats flair on portal routes.
+
+See `AGENTS.md` → **Specialist agents** for persona prompts (Vibe Architect, Motion Sorcerer, etc.).

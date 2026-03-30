@@ -1,0 +1,16 @@
+---
+description: MECG stack, tooling, and non-negotiable UX constraints
+alwaysApply: true
+---
+
+# MECG core
+
+- **Runtime / package manager**: Use **Bun** only (`bun run`, `bunx`, `bun add`). Never npm/yarn/pnpm in instructions or scripts.
+- **Stack**: Vite, React 19, React Router 7, Tailwind 4 (`@import "tailwindcss"`, `@theme`), Supabase client via `src/lib/supabase.ts` and `VITE_SUPABASE_*` env vars.
+- **Product**: Three audiences — applicants, alumni/network, **reviewers** (Tinder-style card screening). Primary review actions need **~44×44px** touch targets on mobile.
+- **Cursor**: Do **not** hide the system cursor on **auth or portal routes** (`LoginPage`, `SignupPage`, `ReviewPage`, `AppShell`, etc.). Custom or `cursor: none` is for **landing / marketing** only (`LandingPage`, hero sections).
+- **Focus**: Consistent `:focus-visible` on links, nav, inputs, and review actions (global styles in `src/index.css`).
+- **Motion**: Respect `prefers-reduced-motion`. Use `usePrefersReducedMotion()` and `getPrefersReducedMotion()` from `src/hooks/use-prefers-reduced-motion.ts` and `src/lib/motion-preference.ts` before Lenis, GSAP, or `motion` heavy sequences.
+- **Types**: Do **not** use `createClient<Database>` with `src/types/database.ts` until types are regenerated (`supabase gen types typescript`); current shape breaks the query builder.
+
+Verify with `bun run lint` and `bun run build` before claiming a change is done.

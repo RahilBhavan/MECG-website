@@ -1,5 +1,5 @@
 {
-  "name": "MECG",
-  "description": "MECG website redesign featuring a cutting-edge, highly interactive digital experience with spatial layouts, 3D elements, and micro-interactions.",
-  "requestFramePermissions": []
+	"name": "MECG",
+	"description": "MECG website redesign featuring a cutting-edge, highly interactive digital experience with spatial layouts, 3D elements, and micro-interactions.",
+	"requestFramePermissions": []
 }

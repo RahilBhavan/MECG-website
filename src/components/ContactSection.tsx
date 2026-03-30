@@ -1,104 +1,294 @@
+import { type FormEvent, useId, useRef, useState } from "react";
+
+import { useRevealUp } from "@/src/hooks/use-landing-scroll-reveals";
+
+type FormStatus = "idle" | "success" | "error";
+
+function buildMailto(params: {
+	to: string;
+	subject: string;
+	body: string;
+}): string {
+	const subject = encodeURIComponent(params.subject);
+	const body = encodeURIComponent(params.body);
+	return `mailto:${params.to}?subject=${subject}&body=${body}`;
+}
+
 export default function ContactSection() {
-  return (
-    <section className="w-full bg-bg text-ink py-32 px-6 border-t border-[#333]">
-      <div className="max-w-7xl mx-auto">
-        
-        {/* Contact Form */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-32">
-          <div className="md:col-span-4">
-            <h2 className="text-technical text-muted mb-4">[07] ENGAGEMENT</h2>
-            <h3 className="text-4xl md:text-5xl font-display leading-tight mb-8">
-              INITIATE<br />CONTACT.
-            </h3>
-            <p className="text-muted font-sans font-light max-w-sm">
-              Whether you are a prospective client or a student looking to join the firm, we welcome your inquiry.
-            </p>
-          </div>
-          <div className="md:col-span-8">
-            <form className="flex flex-col gap-12">
-              <div className="relative">
-                <input 
-                  type="text" 
-                  id="name" 
-                  placeholder="First & Last Name" 
-                  className="w-full bg-transparent border-b border-[#333] py-4 text-xl font-sans font-light text-white placeholder:text-muted/50 focus:outline-none focus:border-white focus:border-b-2 transition-all peer"
-                  required
-                />
-              </div>
-              <div className="relative">
-                <input 
-                  type="email" 
-                  id="email" 
-                  placeholder="Email Address" 
-                  className="w-full bg-transparent border-b border-[#333] py-4 text-xl font-sans font-light text-white placeholder:text-muted/50 focus:outline-none focus:border-white focus:border-b-2 transition-all peer"
-                  required
-                />
-              </div>
-              <div className="relative">
-                <input 
-                  type="text" 
-                  id="subject" 
-                  placeholder="Subject" 
-                  className="w-full bg-transparent border-b border-[#333] py-4 text-xl font-sans font-light text-white placeholder:text-muted/50 focus:outline-none focus:border-white focus:border-b-2 transition-all peer"
-                  required
-                />
-              </div>
-              <div className="relative">
-                <textarea 
-                  id="message" 
-                  placeholder="Message" 
-                  rows={4}
-                  className="w-full bg-transparent border-b border-[#333] py-4 text-xl font-sans font-light text-white placeholder:text-muted/50 focus:outline-none focus:border-white focus:border-b-2 transition-all resize-none peer"
-                  required
-                />
-              </div>
-              <div className="flex justify-end mt-8">
-                <button 
-                  type="submit" 
-                  className="text-technical text-white border border-white px-8 py-4 hover:bg-white hover:text-black transition-colors uppercase tracking-widest"
-                >
-                  Submit Inquiry
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+	const formRef = useRef<HTMLFormElement>(null);
+	const contactIntroRef = useRef<HTMLDivElement>(null);
+	const footerRef = useRef<HTMLElement>(null);
+	const statusId = useId();
+	const [status, setStatus] = useState<FormStatus>("idle");
 
-        {/* Firm Details (Brutalist Footer) */}
-        <footer className="border-t border-[#333] pt-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-12">
-          <div className="flex flex-col gap-4">
-            <h4 className="text-technical text-muted mb-4">MECG // MICHIGAN ENGINEERING CONSULTING GROUP</h4>
-            <div className="text-sm font-sans font-light text-muted">
-              1221 Beal Ave<br />
-              Ann Arbor, MI 48109<br />
-              United States
-            </div>
-          </div>
-          
-          <div className="flex flex-col md:flex-row gap-12 md:gap-24">
-            <div className="flex flex-col gap-4">
-              <h5 className="text-technical text-muted mb-2">INQUIRIES</h5>
-              <a href="mailto:mecg-board@umich.edu" className="text-sm font-sans font-light text-white hover:text-muted transition-colors">
-                mecg-board@umich.edu
-              </a>
-            </div>
-            <div className="flex flex-col gap-4">
-              <h5 className="text-technical text-muted mb-2">SOCIAL</h5>
-              <a href="https://instagram.com/mecgmichigan" target="_blank" rel="noreferrer" className="text-sm font-sans font-light text-white hover:text-muted transition-colors">
-                Instagram (@mecgmichigan)
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="text-sm font-sans font-light text-white hover:text-muted transition-colors">
-                LinkedIn
-              </a>
-            </div>
-          </div>
-          
-          <div className="text-technical text-muted text-right mt-12 md:mt-0">
-            © 2026 MECG.<br />ALL RIGHTS RESERVED.
-          </div>
-        </footer>
+	useRevealUp(contactIntroRef);
+	useRevealUp(footerRef);
+	const [errorMessage, setErrorMessage] = useState("");
+	const [mailtoHref, setMailtoHref] = useState<string | null>(null);
 
-      </div>
-    </section>
-  );
+	function handleSubmit(e: FormEvent<HTMLFormElement>) {
+		e.preventDefault();
+		setErrorMessage("");
+		const form = formRef.current;
+		if (!form) return;
+
+		if (!form.checkValidity()) {
+			form.reportValidity();
+			setStatus("error");
+			setErrorMessage("Please fill in all fields correctly.");
+			return;
+		}
+
+		const fd = new FormData(form);
+		const name = String(fd.get("name") ?? "").trim();
+		const email = String(fd.get("email") ?? "").trim();
+		const subject = String(fd.get("subject") ?? "").trim();
+		const message = String(fd.get("message") ?? "").trim();
+
+		if (!name || !email || !subject || !message) {
+			setStatus("error");
+			setErrorMessage("All fields are required.");
+			return;
+		}
+
+		const body = `Name: ${name}\nEmail: ${email}\n\n${message}`;
+		setMailtoHref(
+			buildMailto({
+				to: "mecg-board@umich.edu",
+				subject: `[MECG site] ${subject}`,
+				body,
+			}),
+		);
+		setStatus("success");
+	}
+
+	function handleResetForm() {
+		setStatus("idle");
+		setErrorMessage("");
+		setMailtoHref(null);
+		formRef.current?.reset();
+	}
+
+	return (
+		<section
+			id="section-contact"
+			className="w-full scroll-mt-14 border-t border-border bg-bg py-32 text-ink md:py-40"
+			aria-labelledby="contact-section-title"
+		>
+			<div className="mx-auto max-w-7xl px-6">
+				<div
+					id={statusId}
+					aria-live="polite"
+					aria-atomic="true"
+					className="mb-8 min-h-[1.25rem] text-sm font-sans font-light"
+				>
+					{status === "error" && errorMessage ? (
+						<p className="text-danger" role="alert">
+							{errorMessage}
+						</p>
+					) : null}
+					{status === "success" ? (
+						<div className="rounded-sm border border-border bg-surface/40 p-6 text-ink-secondary">
+							<p className="mb-4 text-ink">
+								Thank you — your message is ready to send from your email app.
+							</p>
+							<div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+								{mailtoHref ? (
+									<a
+										href={mailtoHref}
+										className="text-technical inline-flex min-h-11 items-center justify-center border border-accent px-6 py-3 text-accent transition-colors hover:bg-accent hover:text-bg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+									>
+										Open in email app
+									</a>
+								) : null}
+								<button
+									type="button"
+									onClick={handleResetForm}
+									className="text-technical text-muted inline-flex min-h-11 items-center justify-center border border-border px-6 py-3 transition-colors hover:border-ink hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+								>
+									Send another inquiry
+								</button>
+							</div>
+						</div>
+					) : null}
+				</div>
+
+				{/* Contact Form */}
+				<div
+					ref={contactIntroRef}
+					className="mb-32 grid grid-cols-1 gap-12 lg:grid-cols-12"
+				>
+					<div className="min-w-0 lg:col-span-4">
+						<h2
+							id="contact-section-title"
+							className="reveal-up type-marketing-kicker mb-4 text-muted"
+						>
+							<span className="text-accent">[07]</span> ENGAGEMENT
+						</h2>
+						<h3 className="type-marketing-section reveal-up mb-8 uppercase leading-tight">
+							INITIATE
+							<br />
+							CONTACT.
+						</h3>
+						<p className="reveal-up text-muted font-sans font-light max-w-sm">
+							Whether you are a prospective client or a student looking to join
+							the firm, we welcome your inquiry.
+						</p>
+					</div>
+					<div className="reveal-up min-w-0 lg:col-span-8">
+						{status === "success" ? (
+							<p className="text-muted font-sans font-light">
+								Use the actions above to open your mail client, or reach us
+								directly at{" "}
+								<a
+									href="mailto:mecg-board@umich.edu"
+									className="text-ink underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+								>
+									mecg-board@umich.edu
+								</a>
+								.
+							</p>
+						) : (
+							<form
+								ref={formRef}
+								className="flex flex-col gap-12"
+								onSubmit={handleSubmit}
+							>
+								<div className="relative">
+									<label
+										htmlFor="contact-name"
+										className="text-technical text-muted mb-2 block"
+									>
+										Name
+									</label>
+									<input
+										type="text"
+										id="contact-name"
+										name="name"
+										placeholder="First & Last Name"
+										autoComplete="name"
+										className="w-full bg-transparent border-b border-border py-4 text-xl font-sans font-light text-ink placeholder:text-muted/50 focus:outline-none focus:border-ink focus:border-b-2 transition-all peer"
+										required
+									/>
+								</div>
+								<div className="relative">
+									<label
+										htmlFor="contact-email"
+										className="text-technical text-muted mb-2 block"
+									>
+										Email
+									</label>
+									<input
+										type="email"
+										id="contact-email"
+										name="email"
+										placeholder="Email Address"
+										autoComplete="email"
+										className="w-full bg-transparent border-b border-border py-4 text-xl font-sans font-light text-ink placeholder:text-muted/50 focus:outline-none focus:border-ink focus:border-b-2 transition-all peer"
+										required
+									/>
+								</div>
+								<div className="relative">
+									<label
+										htmlFor="contact-subject"
+										className="text-technical text-muted mb-2 block"
+									>
+										Subject
+									</label>
+									<input
+										type="text"
+										id="contact-subject"
+										name="subject"
+										placeholder="Subject"
+										className="w-full bg-transparent border-b border-border py-4 text-xl font-sans font-light text-ink placeholder:text-muted/50 focus:outline-none focus:border-ink focus:border-b-2 transition-all peer"
+										required
+									/>
+								</div>
+								<div className="relative">
+									<label
+										htmlFor="contact-message"
+										className="text-technical text-muted mb-2 block"
+									>
+										Message
+									</label>
+									<textarea
+										id="contact-message"
+										name="message"
+										placeholder="Message"
+										rows={4}
+										className="w-full bg-transparent border-b border-border py-4 text-xl font-sans font-light text-ink placeholder:text-muted/50 focus:outline-none focus:border-ink focus:border-b-2 transition-all resize-none peer"
+										required
+									/>
+								</div>
+								<div className="flex justify-end mt-8">
+									<button
+										type="submit"
+										className="text-technical text-accent border border-accent px-8 py-4 min-h-11 hover:bg-accent hover:text-bg transition-colors uppercase tracking-widest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+									>
+										Submit Inquiry
+									</button>
+								</div>
+							</form>
+						)}
+					</div>
+				</div>
+
+				{/* Firm Details (Brutalist Footer) */}
+				<footer
+					ref={footerRef}
+					className="flex flex-col items-start justify-between gap-12 border-t border-border pt-16 lg:flex-row lg:items-end"
+				>
+					<div className="reveal-up flex flex-col gap-4">
+						<h4 className="text-technical text-muted mb-4">
+							MECG // MICHIGAN ENGINEERING CONSULTING GROUP
+						</h4>
+						<div className="text-sm font-sans font-light text-muted">
+							1221 Beal Ave
+							<br />
+							Ann Arbor, MI 48109
+							<br />
+							United States
+						</div>
+					</div>
+
+					<div className="reveal-up flex flex-col gap-12 lg:flex-row lg:gap-24">
+						<div className="flex flex-col gap-4">
+							<h5 className="text-technical text-muted mb-2">INQUIRIES</h5>
+							<a
+								href="mailto:mecg-board@umich.edu"
+								className="text-sm font-sans font-light text-ink hover:text-muted transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded-sm"
+							>
+								mecg-board@umich.edu
+							</a>
+						</div>
+						<div className="flex flex-col gap-4">
+							<h5 className="text-technical text-muted mb-2">SOCIAL</h5>
+							<a
+								href="https://instagram.com/mecgmichigan"
+								target="_blank"
+								rel="noreferrer"
+								className="text-sm font-sans font-light text-ink hover:text-muted transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded-sm"
+							>
+								Instagram (@mecgmichigan)
+							</a>
+							<a
+								href="https://linkedin.com"
+								target="_blank"
+								rel="noreferrer"
+								className="text-sm font-sans font-light text-ink hover:text-muted transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded-sm"
+							>
+								LinkedIn
+							</a>
+						</div>
+					</div>
+
+					<div className="reveal-up mt-12 text-right text-technical text-muted lg:mt-0">
+						© 2026 MECG.
+						<br />
+						ALL RIGHTS RESERVED.
+					</div>
+				</footer>
+			</div>
+		</section>
+	);
 }

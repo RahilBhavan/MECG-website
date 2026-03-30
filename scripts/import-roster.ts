@@ -1,0 +1,207 @@
+/**
+ * Reads W26 xlsx + numbered RAW headshots, writes optimized WebP to public/headshots/
+ * and regenerates src/data/roster-w26.ts.
+ *
+ * Run: bun run roster:import
+ *
+ * The spreadsheet has section rows (BOARD / RETURNING MEMBERS / NEW MEMBERS), not a
+ * dedicated tab column — we map those to FirmSection labels below.
+ *
+ * RAW files use mecgHeadshotRAWS-{n}.jpg with no names. Default: assign n sequentially
+ * in sheet order (first member → 1, …). Fix wrong faces via HEADSHOT_INDEX_OVERRIDES.
+ */
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { fileURLToPath } from "node:url";
+
+import sharp from "sharp";
+import * as XLSX from "xlsx";
+
+import type { RosterCategory, RosterMember } from "../src/types/roster";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(__dirname, "..");
+
+const XLSX_PATH = path.join(ROOT, "MECG Full Membership Roster W26.xlsx");
+const SHEET_NAME = "Copy of Active Members";
+const RAW_DIR = path.join(ROOT, "MECG Headshot RAWs");
+const OUT_DIR = path.join(ROOT, "public", "headshots");
+const DATA_OUT = path.join(ROOT, "src", "data", "roster-w26.ts");
+
+const SECTION_KEYS = ["BOARD", "RETURNING MEMBERS", "NEW MEMBERS"] as const;
+type SectionKey = (typeof SECTION_KEYS)[number];
+
+/** Spreadsheet section → FirmSection tab label */
+const SECTION_TO_CATEGORY: Record<SectionKey, RosterCategory> = {
+	BOARD: "Exec Board",
+	"RETURNING MEMBERS": "PMs",
+	"NEW MEMBERS": "Analysts",
+};
+
+/** Optional: slug (from display name) → RAW file index (mecgHeadshotRAWS-{n}.jpg) */
+const HEADSHOT_INDEX_OVERRIDES: Record<string, number> = {};
+
+const WEBP_WIDTH = 800;
+
+function slugify(name: string): string {
+	return name
+		.normalize("NFKD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-|-$/g, "");
+}
+
+function rawPathForIndex(n: number): string {
+	return path.join(RAW_DIR, `mecgHeadshotRAWS-${n}.jpg`);
+}
+
+function isSectionRow(row: unknown[]): row is [string] {
+	if (row.length !== 1 || typeof row[0] !== "string") return false;
+	const v = row[0].trim();
+	return SECTION_KEYS.includes(v as SectionKey);
+}
+
+function parseMembers(): { members: RosterMember[]; warnings: string[] } {
+	const wb = XLSX.readFile(XLSX_PATH);
+	const sheet = wb.Sheets[SHEET_NAME];
+	if (!sheet) {
+		throw new Error(`Sheet not found: ${SHEET_NAME}`);
+	}
+
+	const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as unknown[][];
+	const warnings: string[] = [];
+	let section: SectionKey = "BOARD";
+	let photoIndex = 0;
+	const seenSlugs = new Set<string>();
+
+	const members: RosterMember[] = [];
+
+	for (let i = 1; i < rows.length; i++) {
+		const row = rows[i];
+		if (!row?.length) continue;
+
+		if (isSectionRow(row)) {
+			section = row[0].trim() as SectionKey;
+			continue;
+		}
+
+		const name = row[0];
+		const position = row[1];
+		if (typeof name !== "string" || !name.trim()) continue;
+
+		const displayName = name.trim();
+		const role =
+			typeof position === "string" && position.trim()
+				? position.trim()
+				: "Member";
+
+		const slug = slugify(displayName);
+		if (!slug) {
+			warnings.push(
+				`Skipping row ${i + 1}: could not slugify name "${displayName}"`,
+			);
+			continue;
+		}
+
+		if (seenSlugs.has(slug)) {
+			warnings.push(
+				`Duplicate name skipped (sheet row ${i + 1}): ${displayName}`,
+			);
+			continue;
+		}
+		seenSlugs.add(slug);
+
+		photoIndex += 1;
+		const rawN = HEADSHOT_INDEX_OVERRIDES[slug] ?? photoIndex;
+		const srcFile = rawPathForIndex(rawN);
+		if (!fs.existsSync(srcFile)) {
+			warnings.push(
+				`Missing RAW for ${displayName} (expected ${path.basename(srcFile)})`,
+			);
+		}
+
+		const category = SECTION_TO_CATEGORY[section];
+		members.push({
+			displayName,
+			role,
+			category,
+			imageSrc: `/headshots/${slug}.webp`,
+		});
+	}
+
+	return { members, warnings };
+}
+
+async function writeWebPs(members: RosterMember[]): Promise<void> {
+	fs.mkdirSync(OUT_DIR, { recursive: true });
+
+	let photoIndex = 0;
+	for (const m of members) {
+		photoIndex += 1;
+		const slug = slugify(m.displayName);
+		const rawN = HEADSHOT_INDEX_OVERRIDES[slug] ?? photoIndex;
+		const srcFile = rawPathForIndex(rawN);
+		const destFile = path.join(OUT_DIR, `${slug}.webp`);
+
+		if (!fs.existsSync(srcFile)) {
+			console.warn(
+				`[skip webp] ${m.displayName}: missing ${path.basename(srcFile)}`,
+			);
+			continue;
+		}
+
+		await sharp(srcFile)
+			.rotate()
+			.resize(WEBP_WIDTH, null, { withoutEnlargement: true, fit: "inside" })
+			.webp({ quality: 82 })
+			.toFile(destFile);
+	}
+}
+
+function emitDataTs(members: RosterMember[]): void {
+	const lines = members.map((m) => {
+		const dn = JSON.stringify(m.displayName);
+		const r = JSON.stringify(m.role);
+		const c = JSON.stringify(m.category);
+		const img = JSON.stringify(m.imageSrc);
+		return `  { displayName: ${dn}, role: ${r}, category: ${c}, imageSrc: ${img} },`;
+	});
+
+	const body = `import type { RosterMember } from '../types/roster';
+
+/** Auto-generated by scripts/import-roster.ts — run \`bun run roster:import\` after roster/photo updates. */
+export const rosterW26: RosterMember[] = [
+${lines.join("\n")}
+];
+`;
+
+	fs.mkdirSync(path.dirname(DATA_OUT), { recursive: true });
+	fs.writeFileSync(DATA_OUT, body, "utf8");
+}
+
+async function main(): Promise<void> {
+	if (!fs.existsSync(XLSX_PATH)) {
+		throw new Error(`Roster file not found: ${XLSX_PATH}`);
+	}
+	if (!fs.existsSync(RAW_DIR)) {
+		throw new Error(`Headshot folder not found: ${RAW_DIR}`);
+	}
+
+	const { members, warnings } = parseMembers();
+	if (members.length === 0) {
+		throw new Error("No members parsed from roster.");
+	}
+
+	for (const w of warnings) console.warn(`[warn] ${w}`);
+
+	console.log(`Parsed ${members.length} members. Writing WebP…`);
+	await writeWebPs(members);
+	emitDataTs(members);
+	console.log(`Wrote ${DATA_OUT} and public/headshots/*.webp`);
+}
+
+main().catch((e) => {
+	console.error(e);
+	process.exit(1);
+});

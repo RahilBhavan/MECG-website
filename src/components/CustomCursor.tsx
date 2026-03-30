@@ -1,46 +1,56 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 
 export default function CustomCursor() {
-  const cursorRef = useRef<HTMLDivElement>(null);
-  const [isHovering, setIsHovering] = useState(false);
+	const cursorRef = useRef<HTMLDivElement>(null);
+	const [isHovering, setIsHovering] = useState(false);
 
-  useEffect(() => {
-    const cursor = cursorRef.current;
-    if (!cursor) return;
+	useEffect(() => {
+		const cursor = cursorRef.current;
+		if (!cursor) return;
 
-    const onMouseMove = (e: MouseEvent) => {
-      cursor.style.left = `${e.clientX}px`;
-      cursor.style.top = `${e.clientY}px`;
-    };
+		let raf = 0;
+		let pendingX = 0;
+		let pendingY = 0;
+		const flush = () => {
+			raf = 0;
+			cursor.style.left = `${pendingX}px`;
+			cursor.style.top = `${pendingY}px`;
+		};
 
-    const onMouseOver = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (
-        target.tagName.toLowerCase() === 'a' ||
-        target.tagName.toLowerCase() === 'button' ||
-        target.closest('a') ||
-        target.closest('button') ||
-        target.classList.contains('interactive')
-      ) {
-        setIsHovering(true);
-      } else {
-        setIsHovering(false);
-      }
-    };
+		const onMouseMove = (e: MouseEvent) => {
+			pendingX = e.clientX;
+			pendingY = e.clientY;
+			if (raf === 0) raf = requestAnimationFrame(flush);
+		};
 
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseover', onMouseOver);
+		const onMouseOver = (e: MouseEvent) => {
+			const target = e.target as HTMLElement;
+			if (
+				target.tagName.toLowerCase() === "a" ||
+				target.tagName.toLowerCase() === "button" ||
+				target.closest("a") ||
+				target.closest("button") ||
+				target.classList.contains("interactive")
+			) {
+				setIsHovering(true);
+			} else {
+				setIsHovering(false);
+			}
+		};
 
-    return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseover', onMouseOver);
-    };
-  }, []);
+		window.addEventListener("mousemove", onMouseMove);
+		window.addEventListener("mouseover", onMouseOver);
 
-  return (
-    <div
-      ref={cursorRef}
-      className={`custom-cursor ${isHovering ? 'hovering' : ''}`}
-    />
-  );
+		return () => {
+			window.removeEventListener("mousemove", onMouseMove);
+			window.removeEventListener("mouseover", onMouseOver);
+		};
+	}, []);
+
+	return (
+		<div
+			ref={cursorRef}
+			className={`custom-cursor ${isHovering ? "hovering" : ""}`}
+		/>
+	);
 }

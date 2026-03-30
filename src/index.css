@@ -1,95 +1,329 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  --font-display: "Playfair Display", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  
-  --color-bg: #0a0a0a;
-  --color-ink: #ffffff;
-  --color-accent: #ffffff;
-  --color-muted: #d4d4d4;
+	/* Two families only: Inter (UI + labels) + Playfair (display). Bundled via Fontsource in main.tsx (latin subset). */
+	--font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+	/* System serif stack limits CLS while webfonts swap (font-display: swap in @fontsource). */
+	--font-display:
+		"Playfair Display", ui-serif, Georgia, Cambria, "Times New Roman", Times,
+		serif;
+	/* Alias so Tailwind `font-mono` never pulls a third face — use with tabular-nums for IDs. */
+	--font-mono: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+	--leading-body: 1.68;
+	--leading-tight-display: 1.15;
+	--tracking-portal-title: 0.02em;
+	--tracking-technical: 0.11em;
+	--radius-panel: 0.125rem;
+
+	/* Surfaces — dark-first editorial base (lifted for a fresher, less OLED-flat read) */
+	--color-bg: #111111;
+	--color-bg-raised: #181818;
+	--color-surface: #212121;
+
+	/* Text */
+	--color-ink: #fafafa;
+	--color-ink-secondary: #e5e5e5;
+	--color-muted: #b8b8b8;
+
+	/* Borders — slightly clearer hairlines */
+	--color-border: #404040;
+	--color-border-strong: #5c5c5c;
+
+	/* Brand accent — muted copper */
+	--color-accent: #c9a962;
+	--color-accent-hover: #e2c77e;
+	--color-accent-muted: #352e1f;
+
+	/* Semantic — status & reviewer verdicts (tints lifted with base) */
+	--color-success: #86efac;
+	--color-success-bg: #1a3228;
+	--color-warning: #fde68a;
+	--color-warning-bg: #352f14;
+	--color-danger: #fca5a5;
+	--color-danger-bg: #321a1e;
+
+	/* Focus — high visibility on dark UI */
+	--color-focus-ring: #e8e8e8;
+
+	/* shadcn/ui semantic tokens (components/ui — Button, etc.) — no duplicate --color-accent/--color-muted (those stay brand + body text) */
+	--color-background: #111111;
+	--color-foreground: #fafafa;
+	--color-primary: #c9a962;
+	--color-primary-foreground: #111111;
+	--color-secondary: #2e2e2e;
+	--color-secondary-foreground: #fafafa;
+	--color-destructive: #dc2626;
+	--color-destructive-foreground: #fafafa;
+	--color-muted-foreground: #a8a8a8;
+	--color-input: #404040;
+	--color-ring: #e8e8e8;
+
+	/* Hero static mesh — mirrors accent-muted wash, no raw RGB in TSX */
+	--color-hero-radial-mid: color-mix(
+		in srgb,
+		var(--color-accent-muted) 30%,
+		transparent
+	);
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
 }
 
 body {
-  background-color: var(--color-bg);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  overflow-x: hidden;
-  cursor: none; /* Hide default cursor for custom cursor */
+	background-color: var(--color-bg);
+	color: var(--color-ink);
+	font-family: var(--font-sans);
+	line-height: var(--leading-body);
+	overflow-x: hidden;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	/* Default cursor site-wide; marketing landing uses .cursor-none + CustomCursor */
+	cursor: auto;
+}
+
+/* Skip to main: hidden until keyboard :focus-visible */
+.skip-link {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.skip-link:focus {
+	position: fixed;
+	left: 1rem;
+	top: 1rem;
+	z-index: 200;
+	width: auto;
+	height: auto;
+	margin: 0;
+	overflow: visible;
+	clip: auto;
+	white-space: normal;
+	padding: 0.5rem 1rem;
+	font-family: var(--font-sans);
+	font-size: 0.75rem;
+	font-weight: 500;
+	letter-spacing: var(--tracking-technical);
+	text-transform: uppercase;
+	color: var(--color-ink);
+	background-color: var(--color-surface);
+	border: 1px solid var(--color-border-strong);
+	border-radius: var(--radius-panel);
+	text-decoration: none;
+}
+
+/* App shell and auth: consistent display headings */
+.type-portal-title {
+	font-family: var(--font-display);
+	font-size: 2.25rem;
+	line-height: var(--leading-tight-display);
+	letter-spacing: var(--tracking-portal-title);
+	margin-bottom: 0.5rem;
+}
+
+/* Same rhythm as .type-portal-title but Inter — dense admin / tooling surfaces */
+.type-portal-title-sans {
+	font-family: var(--font-sans);
+	font-size: 2.25rem;
+	line-height: var(--leading-tight-display);
+	letter-spacing: var(--tracking-portal-title);
+	margin-bottom: 0.5rem;
+}
+
+.type-auth-title {
+	font-family: var(--font-display);
+	font-size: 1.875rem;
+	line-height: var(--leading-tight-display);
+	letter-spacing: var(--tracking-portal-title);
+}
+
+.type-auth-state-title {
+	font-family: var(--font-display);
+	font-size: 1.5rem;
+	line-height: var(--leading-tight-display);
+	letter-spacing: var(--tracking-portal-title);
+}
+
+/* Keyboard focus: visible ring for interactive elements */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+summary:focus-visible {
+	outline: 2px solid var(--color-focus-ring);
+	outline-offset: 2px;
+}
+
+a:focus:not(:focus-visible),
+button:focus:not(:focus-visible) {
+	outline: none;
 }
 
 /* Custom Cursor */
 .custom-cursor {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 20px;
-  height: 20px;
-  border: 1px solid var(--color-ink);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9999;
-  transform: translate(-50%, -50%);
-  transition: width 0.2s, height 0.2s, background-color 0.2s;
-  mix-blend-mode: difference;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 20px;
+	height: 20px;
+	border: 1px solid var(--color-ink);
+	border-radius: 50%;
+	pointer-events: none;
+	z-index: 9999;
+	transform: translate(-50%, -50%);
+	transition:
+		width 0.2s,
+		height 0.2s,
+		background-color 0.2s;
+	mix-blend-mode: difference;
 }
 
 .custom-cursor.hovering {
-  width: 60px;
-  height: 60px;
-  background-color: var(--color-ink);
-  opacity: 0.2;
+	width: 60px;
+	height: 60px;
+	background-color: var(--color-ink);
+	opacity: 0.2;
 }
 
-/* Technical Lines */
-.tech-line {
-  stroke: var(--color-ink);
-  stroke-width: 1;
-  opacity: 0.3;
-  fill: none;
-}
-
-.tech-node {
-  fill: var(--color-bg);
-  stroke: var(--color-ink);
-  stroke-width: 1;
-}
-
-/* Brutalist Typography */
+/* Brutalist Typography — hero lockup (marketing: type leads, canvas stays subtle) */
 .text-massive {
-  font-family: var(--font-display);
-  font-size: clamp(4rem, 12vw, 12rem);
-  line-height: 0.85;
-  letter-spacing: -0.04em;
-  text-transform: uppercase;
+	font-family: var(--font-display);
+	font-size: clamp(4rem, 12vw, 12rem);
+	line-height: 0.85;
+	letter-spacing: -0.04em;
+	text-transform: uppercase;
 }
 
+/* Slightly larger floor + tighter tracking so the hero reads first on large screens */
+.type-marketing-hero {
+	font-family: var(--font-display);
+	font-size: clamp(4.25rem, 13vw, 13rem);
+	line-height: 0.82;
+	letter-spacing: -0.045em;
+	text-transform: uppercase;
+}
+
+/* Section titles — use under [nn] kickers on the landing page */
+.type-marketing-section {
+	font-family: var(--font-display);
+	font-size: clamp(2rem, 4.5vw, 3.75rem);
+	line-height: var(--leading-tight-display);
+	letter-spacing: -0.02em;
+}
+
+/* Recruitment-style display stack (single use / loud chapter openers) */
+.type-marketing-display-xl {
+	font-family: var(--font-display);
+	font-size: clamp(3rem, 8vw, 5.75rem);
+	line-height: 0.92;
+	letter-spacing: -0.03em;
+	text-transform: uppercase;
+}
+
+/* Shared kicker line: technical caps + stable size (avoid ad-hoc text-[0.65rem] drift) */
+.type-marketing-kicker {
+	font-family: var(--font-sans);
+	font-size: 0.6875rem;
+	font-weight: 500;
+	letter-spacing: var(--tracking-technical);
+	text-transform: uppercase;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Break out of max-width column to viewport width (horizontal strips, bands) */
+.marketing-full-bleed {
+	position: relative;
+	width: 100vw;
+	max-width: 100vw;
+	margin-left: calc(50% - 50vw);
+	margin-right: calc(50% - 50vw);
+}
+
+/* Labels + nav: Inter, tracked caps (replaces a separate mono face). */
 .text-technical {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+	font-family: var(--font-sans);
+	font-size: 0.6875rem;
+	font-weight: 500;
+	letter-spacing: var(--tracking-technical);
+	text-transform: uppercase;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Dense UI code / ids — still Inter + tabular lining figures. */
+.font-data {
+	font-family: var(--font-sans);
+	font-variant-numeric: tabular-nums;
+	font-size: 0.8125rem;
+	font-weight: 400;
+	letter-spacing: 0.02em;
 }
 
 /* Lenis smooth scrolling */
-html.lenis, html.lenis body {
-  height: auto;
+html.lenis,
+html.lenis body {
+	height: auto;
 }
 
 .lenis.lenis-smooth {
-  scroll-behavior: auto !important;
+	scroll-behavior: auto !important;
 }
 
 .lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
+	overscroll-behavior: contain;
 }
 
 .lenis.lenis-stopped {
-  overflow: hidden;
+	overflow: hidden;
 }
 
 .lenis.lenis-smooth iframe {
-  pointer-events: none;
+	pointer-events: none;
+}
+
+/* Skip to main: hidden until keyboard focus */
+.skip-link {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border: 0;
+}
+
+.skip-link:focus {
+	position: fixed;
+	left: 1rem;
+	top: 1rem;
+	z-index: 200;
+	width: auto;
+	height: auto;
+	margin: 0;
+	padding: 0.5rem 1rem;
+	overflow: visible;
+	clip: auto;
+	clip-path: none;
+	white-space: normal;
+	background-color: var(--color-surface);
+	color: var(--color-ink);
+	border: 1px solid var(--color-border);
+	font-family: var(--font-sans);
+	font-size: 0.8125rem;
+	font-weight: 500;
+	letter-spacing: var(--tracking-technical);
+	text-transform: uppercase;
+	text-decoration: none;
 }

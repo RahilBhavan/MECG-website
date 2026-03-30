@@ -1,0 +1,1029 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { hasRole, useAuth } from "@/src/auth/AuthProvider";
+import { useToast } from "@/src/components/toast/ToastProvider";
+import {
+	APPLICATION_HEADSHOT_ACCEPT,
+	APPLICATION_HEADSHOT_MAX_BYTES,
+	APPLICATION_HEADSHOTS_BUCKET,
+	createApplicationHeadshotSignedUrl,
+	headshotStoragePath,
+	isApplicationHeadshotMime,
+} from "@/src/lib/application-headshot-storage";
+import { getPrefersReducedMotion } from "@/src/lib/motion-preference";
+import { supabase } from "@/src/lib/supabase";
+import type {
+	ApplicationAnswers,
+	ApplicationRow,
+	ApplicationStatus,
+} from "@/src/types/database";
+
+const STEPS = ["About you", "Essay", "Links"] as const;
+
+const TEXT_FIELD_ORDER = [
+	"fullName",
+	"major",
+	"academicYear",
+	"whyMecg",
+] as const;
+
+/** Order for submit validation focus (includes headshot after name). */
+const SUBMIT_FOCUS_ORDER = [
+	"fullName",
+	"headshotPath",
+	"major",
+	"academicYear",
+	"whyMecg",
+] as const;
+
+/** Shared focus ring for portal form controls (keyboard + pointer). */
+const PORTAL_FIELD_FOCUS =
+	"outline-none focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring";
+
+function RequiredMark() {
+	return (
+		<span className="text-danger ml-0.5" aria-hidden>
+			*
+		</span>
+	);
+}
+
+function emptyAnswers(): ApplicationAnswers {
+	return {
+		fullName: "",
+		headshotPath: "",
+		major: "",
+		academicYear: "",
+		whyMecg: "",
+		resumeUrl: "",
+	};
+}
+
+function normalizeAnswers(raw: unknown): ApplicationAnswers {
+	if (!raw || typeof raw !== "object") return emptyAnswers();
+	const o = raw as Record<string, unknown>;
+	return {
+		fullName: String(o.fullName ?? ""),
+		headshotPath: o.headshotPath != null ? String(o.headshotPath) : "",
+		major: String(o.major ?? ""),
+		academicYear: String(o.academicYear ?? ""),
+		whyMecg: String(o.whyMecg ?? ""),
+		resumeUrl: o.resumeUrl != null ? String(o.resumeUrl) : "",
+	};
+}
+
+function stepForField(
+	key: (typeof TEXT_FIELD_ORDER)[number] | "headshotPath",
+): number {
+	if (key === "whyMecg") return 1;
+	return 0;
+}
+
+function SubmittedHeadshotSummary({ path }: { path: string }) {
+	const [src, setSrc] = useState<string | null>(null);
+	const [failed, setFailed] = useState(false);
+
+	useEffect(() => {
+		let cancelled = false;
+		setSrc(null);
+		setFailed(false);
+		void createApplicationHeadshotSignedUrl(supabase, path).then((url) => {
+			if (cancelled) return;
+			if (!url) {
+				setFailed(true);
+				return;
+			}
+			setSrc(url);
+		});
+		return () => {
+			cancelled = true;
+		};
+	}, [path]);
+
+	return (
+		<div>
+			<dt className="text-technical text-muted">Headshot</dt>
+			<dd className="mt-2">
+				{failed ? (
+					<p className="text-sm text-muted">Could not load photo.</p>
+				) : src ? (
+					<img
+						src={src}
+						alt="Your submitted headshot"
+						width={128}
+						height={128}
+						decoding="async"
+						className="h-32 w-32 rounded border border-border object-cover"
+					/>
+				) : (
+					<p className="text-sm text-muted">Loading photo…</p>
+				)}
+			</dd>
+		</div>
+	);
+}
+
+export default function ApplyPage() {
+	const { user, roles } = useAuth();
+	const { pushToast } = useToast();
+	const isAdmin = hasRole(roles, "admin");
+	const [row, setRow] = useState<ApplicationRow | null>(null);
+	const [answers, setAnswers] = useState<ApplicationAnswers>(emptyAnswers());
+	const [batchId, setBatchId] = useState("default");
+	const [loading, setLoading] = useState(true);
+	const [saving, setSaving] = useState(false);
+	const [message, setMessage] = useState<string | null>(null);
+	const [activeStep, setActiveStep] = useState(0);
+	const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+	const [saveNotice, setSaveNotice] = useState<"idle" | "saving" | "saved">(
+		"idle",
+	);
+	const [saveNoticeError, setSaveNoticeError] = useState<string | null>(null);
+	const saveNoticeResetRef = useRef<number | null>(null);
+
+	const fullNameRef = useRef<HTMLInputElement>(null);
+	const majorRef = useRef<HTMLInputElement>(null);
+	const academicYearRef = useRef<HTMLInputElement>(null);
+	const whyMecgRef = useRef<HTMLTextAreaElement>(null);
+	const submitDialogRef = useRef<HTMLDialogElement>(null);
+	const headshotPickRef = useRef<HTMLButtonElement>(null);
+	const headshotInputRef = useRef<HTMLInputElement>(null);
+	const localHeadshotObjectUrlRef = useRef<string | null>(null);
+
+	const [headshotUploading, setHeadshotUploading] = useState(false);
+	const [localHeadshotPreviewUrl, setLocalHeadshotPreviewUrl] = useState<
+		string | null
+	>(null);
+	const [remoteHeadshotPreviewUrl, setRemoteHeadshotPreviewUrl] = useState<
+		string | null
+	>(null);
+
+	const fieldRefs = useMemo(
+		() =>
+			({
+				fullName: fullNameRef,
+				major: majorRef,
+				academicYear: academicYearRef,
+				whyMecg: whyMecgRef,
+			}) as const,
+		[],
+	);
+
+	const status: ApplicationStatus = row?.status ?? "draft";
+	const isEditable = status === "draft";
+
+	const submitReady = useMemo(() => {
+		return (
+			answers.fullName.trim().length > 0 &&
+			(answers.headshotPath?.trim().length ?? 0) > 0 &&
+			answers.major.trim().length > 0 &&
+			answers.academicYear.trim().length > 0 &&
+			answers.whyMecg.trim().length > 0
+		);
+	}, [answers]);
+
+	const headshotDisplayUrl =
+		localHeadshotPreviewUrl ?? remoteHeadshotPreviewUrl ?? null;
+
+	function revokeLocalHeadshotPreview() {
+		if (localHeadshotObjectUrlRef.current) {
+			URL.revokeObjectURL(localHeadshotObjectUrlRef.current);
+			localHeadshotObjectUrlRef.current = null;
+		}
+		setLocalHeadshotPreviewUrl(null);
+	}
+
+	function primeLocalHeadshotPreview(file: File) {
+		revokeLocalHeadshotPreview();
+		const url = URL.createObjectURL(file);
+		localHeadshotObjectUrlRef.current = url;
+		setLocalHeadshotPreviewUrl(url);
+	}
+
+	useEffect(() => {
+		return () => {
+			if (saveNoticeResetRef.current != null)
+				window.clearTimeout(saveNoticeResetRef.current);
+		};
+	}, []);
+
+	useEffect(() => {
+		return () => {
+			if (localHeadshotObjectUrlRef.current) {
+				URL.revokeObjectURL(localHeadshotObjectUrlRef.current);
+				localHeadshotObjectUrlRef.current = null;
+			}
+		};
+	}, []);
+
+	useEffect(() => {
+		let cancelled = false;
+		const path = answers.headshotPath?.trim();
+		if (!path || localHeadshotPreviewUrl) {
+			setRemoteHeadshotPreviewUrl(null);
+			return;
+		}
+		void createApplicationHeadshotSignedUrl(supabase, path).then((url) => {
+			if (!cancelled) setRemoteHeadshotPreviewUrl(url);
+		});
+		return () => {
+			cancelled = true;
+		};
+	}, [answers.headshotPath, localHeadshotPreviewUrl]);
+
+	const load = useCallback(async () => {
+		if (!user) return;
+		setLoading(true);
+		const { data, error } = await supabase
+			.from("applications")
+			.select("*")
+			.eq("user_id", user.id)
+			.maybeSingle();
+		if (error) {
+			setMessage(error.message);
+			setLoading(false);
+			return;
+		}
+		if (!data) {
+			const insert = await supabase
+				.from("applications")
+				.insert({
+					user_id: user.id,
+					status: "draft",
+					batch_id: "default",
+					answers: emptyAnswers() as unknown as Record<string, unknown>,
+				})
+				.select("*")
+				.single();
+			if (insert.error) {
+				setMessage(insert.error.message);
+				setLoading(false);
+				return;
+			}
+			if (!insert.data) {
+				setMessage("Could not create application.");
+				setLoading(false);
+				return;
+			}
+			const created = insert.data as ApplicationRow;
+			setRow(created);
+			setAnswers(normalizeAnswers(created.answers));
+			setBatchId(created.batch_id);
+		} else {
+			setRow(data as ApplicationRow);
+			setAnswers(normalizeAnswers(data.answers));
+			setBatchId(data.batch_id);
+		}
+		setLoading(false);
+	}, [user]);
+
+	useEffect(() => {
+		void load();
+	}, [load]);
+
+	function scheduleSaveNoticeReset() {
+		if (saveNoticeResetRef.current != null)
+			window.clearTimeout(saveNoticeResetRef.current);
+		saveNoticeResetRef.current = window.setTimeout(() => {
+			setSaveNotice("idle");
+			saveNoticeResetRef.current = null;
+		}, 5000);
+	}
+
+	function blurValidateField(
+		field: (typeof TEXT_FIELD_ORDER)[number],
+		value: string,
+	) {
+		if (!value.trim()) {
+			setFieldErrors((f) => ({ ...f, [field]: "Required" }));
+		} else {
+			setFieldErrors((f) => ({ ...f, [field]: "" }));
+		}
+	}
+
+	function focusFirstFieldError(errors: Record<string, string>) {
+		for (const key of SUBMIT_FOCUS_ORDER) {
+			if (!errors[key]) continue;
+			const step = stepForField(key);
+			setActiveStep(step);
+			if (key === "headshotPath") {
+				window.requestAnimationFrame(() => {
+					headshotPickRef.current?.focus();
+					headshotPickRef.current?.scrollIntoView({
+						block: "nearest",
+						behavior: getPrefersReducedMotion() ? "auto" : "smooth",
+					});
+				});
+				break;
+			}
+			const ref = fieldRefs[key];
+			window.requestAnimationFrame(() => {
+				const el = ref.current;
+				if (!el) return;
+				el.focus();
+				el.scrollIntoView({
+					block: "nearest",
+					behavior: getPrefersReducedMotion() ? "auto" : "smooth",
+				});
+			});
+			break;
+		}
+	}
+
+	async function saveDraft() {
+		if (!user || !row || !isEditable) return;
+		setSaving(true);
+		setMessage(null);
+		setSaveNoticeError(null);
+		setSaveNotice("saving");
+		const resumeUrl = answers.resumeUrl?.trim() || undefined;
+		const headshotPath = answers.headshotPath?.trim() || undefined;
+		const payload = {
+			...answers,
+			resumeUrl,
+			headshotPath,
+		};
+		const { error } = await supabase
+			.from("applications")
+			.update({
+				answers: payload as unknown as Record<string, unknown>,
+				batch_id: batchId,
+			})
+			.eq("id", row.id)
+			.eq("user_id", user.id);
+		setSaving(false);
+		if (error) {
+			setSaveNotice("idle");
+			setSaveNoticeError(error.message);
+			setMessage(error.message);
+			pushToast(error.message, "error");
+			return;
+		}
+		setSaveNotice("saved");
+		scheduleSaveNoticeReset();
+		pushToast("Draft saved.", "success");
+		void load();
+	}
+
+	function computeSubmitErrors(): Record<string, string> {
+		const next: Record<string, string> = {};
+		if (!answers.fullName.trim()) next.fullName = "Required";
+		if (!answers.headshotPath?.trim()) next.headshotPath = "Required";
+		if (!answers.major.trim()) next.major = "Required";
+		if (!answers.academicYear.trim()) next.academicYear = "Required";
+		if (!answers.whyMecg.trim()) next.whyMecg = "Required";
+		return next;
+	}
+
+	async function uploadHeadshotFile(file: File) {
+		if (!user) return;
+		if (!isApplicationHeadshotMime(file.type)) {
+			pushToast("Use a JPEG, PNG, or WebP image.", "error");
+			return;
+		}
+		if (file.size > APPLICATION_HEADSHOT_MAX_BYTES) {
+			pushToast("Image must be 5 MB or smaller.", "error");
+			return;
+		}
+		const path = headshotStoragePath(user.id, file.type);
+		const previousPath = answers.headshotPath?.trim();
+		primeLocalHeadshotPreview(file);
+		setHeadshotUploading(true);
+		const { error } = await supabase.storage
+			.from(APPLICATION_HEADSHOTS_BUCKET)
+			.upload(path, file, { upsert: true, contentType: file.type });
+		setHeadshotUploading(false);
+		if (error) {
+			revokeLocalHeadshotPreview();
+			pushToast(error.message, "error");
+			return;
+		}
+		if (previousPath && previousPath !== path) {
+			await supabase.storage
+				.from(APPLICATION_HEADSHOTS_BUCKET)
+				.remove([previousPath]);
+		}
+		revokeLocalHeadshotPreview();
+		setAnswers((a) => ({ ...a, headshotPath: path }));
+		setFieldErrors((f) => ({ ...f, headshotPath: "" }));
+		pushToast("Headshot uploaded.", "success");
+	}
+
+	function onHeadshotFileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+		const file = e.target.files?.[0];
+		e.target.value = "";
+		if (!file) return;
+		void uploadHeadshotFile(file);
+	}
+
+	async function removeHeadshot() {
+		if (!user) return;
+		const path = answers.headshotPath?.trim();
+		if (!path) return;
+		setHeadshotUploading(true);
+		const { error } = await supabase.storage
+			.from(APPLICATION_HEADSHOTS_BUCKET)
+			.remove([path]);
+		setHeadshotUploading(false);
+		if (error) {
+			pushToast(error.message, "error");
+			return;
+		}
+		revokeLocalHeadshotPreview();
+		setAnswers((a) => ({ ...a, headshotPath: "" }));
+		setRemoteHeadshotPreviewUrl(null);
+		pushToast("Headshot removed.", "success");
+	}
+
+	function openSubmitDialog() {
+		if (!user || !row || !isEditable) return;
+		const submitErrors = computeSubmitErrors();
+		setFieldErrors(submitErrors);
+		if (Object.keys(submitErrors).length > 0) {
+			pushToast("Fill in all required fields before submitting.", "error");
+			focusFirstFieldError(submitErrors);
+			return;
+		}
+		submitDialogRef.current?.showModal();
+	}
+
+	function closeSubmitDialog() {
+		submitDialogRef.current?.close();
+	}
+
+	async function performSubmit() {
+		if (!user || !row || !isEditable) return;
+		const submitErrors = computeSubmitErrors();
+		if (Object.keys(submitErrors).length > 0) {
+			setFieldErrors(submitErrors);
+			pushToast("Fill in all required fields before submitting.", "error");
+			focusFirstFieldError(submitErrors);
+			return;
+		}
+		setSaving(true);
+		setMessage(null);
+		const resumeUrl = answers.resumeUrl?.trim() || undefined;
+		const headshotPath = answers.headshotPath?.trim() || undefined;
+		const payload = { ...answers, resumeUrl, headshotPath };
+		const { error } = await supabase
+			.from("applications")
+			.update({
+				answers: payload as unknown as Record<string, unknown>,
+				batch_id: batchId,
+				status: "submitted",
+				submitted_at: new Date().toISOString(),
+			})
+			.eq("id", row.id)
+			.eq("user_id", user.id);
+		setSaving(false);
+		if (error) {
+			setMessage(error.message);
+			pushToast(error.message, "error");
+			return;
+		}
+		pushToast("Application submitted.", "success");
+		void load();
+	}
+
+	async function confirmSubmit() {
+		closeSubmitDialog();
+		await performSubmit();
+	}
+
+	if (loading) {
+		return (
+			<div className="space-y-6">
+				<div className="space-y-2">
+					<div className="h-10 w-56 animate-pulse rounded bg-ink/10" />
+					<div className="h-4 w-40 animate-pulse rounded bg-ink/10" />
+				</div>
+				<div className="h-12 animate-pulse rounded border border-border bg-ink/5" />
+				<div className="min-h-[280px] animate-pulse rounded border border-border bg-ink/5 p-6">
+					<div className="mb-4 h-4 max-w-md rounded bg-ink/10" />
+					<div className="mb-4 h-11 w-full max-w-lg rounded bg-ink/10" />
+					<div className="h-11 w-full max-w-lg rounded bg-ink/10" />
+				</div>
+				<div className="flex gap-4">
+					<div className="h-11 w-32 animate-pulse rounded border border-border bg-ink/5" />
+					<div className="h-11 w-44 animate-pulse rounded border border-border bg-ink/5" />
+				</div>
+			</div>
+		);
+	}
+
+	return (
+		<div className="space-y-10">
+			<div>
+				<h1 className="type-portal-title">Application</h1>
+				<p className="text-technical text-muted">
+					Status: <span className="text-ink">{status}</span>
+					{row?.submitted_at ? (
+						<span className="ml-2">
+							· Submitted {new Date(row.submitted_at).toLocaleString()}
+						</span>
+					) : null}
+				</p>
+			</div>
+
+			{message ? (
+				<div className="space-y-1 border border-danger/50 px-4 py-2">
+					<p className="text-sm text-danger">{message}</p>
+					<p className="text-technical text-xs text-muted">
+						This message is from the server or network while loading or saving
+						your application.
+					</p>
+				</div>
+			) : null}
+
+			{!isEditable && row ? (
+				<div className="space-y-6">
+					<div className="border border-border p-6 space-y-4">
+						<h2 className="text-technical text-muted">What you submitted</h2>
+						<dl className="grid gap-3 font-sans text-sm">
+							<div>
+								<dt className="text-technical text-muted">Name</dt>
+								<dd>{normalizeAnswers(row.answers).fullName}</dd>
+							</div>
+							{normalizeAnswers(row.answers).headshotPath?.trim() ? (
+								<SubmittedHeadshotSummary
+									path={normalizeAnswers(row.answers).headshotPath!.trim()}
+								/>
+							) : null}
+							<div>
+								<dt className="text-technical text-muted">Major · Year</dt>
+								<dd>
+									{normalizeAnswers(row.answers).major} ·{" "}
+									{normalizeAnswers(row.answers).academicYear}
+								</dd>
+							</div>
+							<div>
+								<dt className="text-technical text-muted">Batch</dt>
+								<dd>{row.batch_id}</dd>
+							</div>
+							<div>
+								<dt className="text-technical text-muted">Why MECG?</dt>
+								<dd className="whitespace-pre-wrap text-muted">
+									{normalizeAnswers(row.answers).whyMecg}
+								</dd>
+							</div>
+							{normalizeAnswers(row.answers).resumeUrl ? (
+								<div>
+									<dt className="text-technical text-muted">Resume</dt>
+									<dd>
+										<a
+											href={normalizeAnswers(row.answers).resumeUrl}
+											className="text-ink underline"
+											target="_blank"
+											rel="noreferrer"
+										>
+											Link
+										</a>
+									</dd>
+								</div>
+							) : null}
+						</dl>
+					</div>
+					<div className="border border-success/40 bg-success-bg/30 p-6 space-y-2">
+						<h2 className="text-technical text-success">Next steps</h2>
+						<p className="text-muted font-sans text-sm leading-relaxed">
+							Your application is with the recruitment team. You’ll hear about
+							next rounds by email if you’re selected. Typical timeline:
+							interviews are scheduled after the application deadline listed on
+							the public site—watch your inbox (and spam).
+						</p>
+					</div>
+				</div>
+			) : null}
+
+			{isEditable ? (
+				<div className="space-y-4 max-sm:pb-28">
+					<div className="sticky top-0 z-10 -mx-2 px-2 py-3 bg-bg/95 backdrop-blur border-b border-border">
+						<p className="text-technical text-muted mb-1" id="apply-step-label">
+							Step {activeStep + 1} of {STEPS.length}: {STEPS[activeStep]}
+						</p>
+						<p
+							id="apply-required-hint"
+							className="text-technical text-xs text-ink/75 mb-2 leading-relaxed"
+						>
+							Fields marked <span className="text-danger">*</span> are required.
+						</p>
+						<div
+							className="mb-3 h-1 w-full overflow-hidden rounded-full bg-ink/10"
+							role="progressbar"
+							aria-valuemin={1}
+							aria-valuemax={STEPS.length}
+							aria-valuenow={activeStep + 1}
+							aria-labelledby="apply-step-label"
+						>
+							<div
+								className="h-full bg-accent transition-[width] duration-300 ease-out"
+								style={{ width: `${((activeStep + 1) / STEPS.length) * 100}%` }}
+							/>
+						</div>
+						<div className="flex flex-wrap gap-2">
+							{STEPS.map((label, i) => (
+								<button
+									key={label}
+									type="button"
+									onClick={() => setActiveStep(i)}
+									aria-current={i === activeStep ? "step" : undefined}
+									className={`min-h-11 px-3 text-technical border rounded-l border-l-4 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
+										i === activeStep
+											? "border-accent border-l-accent bg-ink/10 text-ink"
+											: "border-border border-l-transparent text-ink/70 hover:border-ink/40 hover:border-l-ink/20 hover:text-ink"
+									}`}
+								>
+									{i + 1}. {label}
+								</button>
+							))}
+						</div>
+					</div>
+
+					<fieldset
+						className="grid min-w-0 gap-4 border border-border p-4 sm:p-6 space-y-4"
+						aria-labelledby="apply-step-label"
+						aria-describedby="apply-required-hint"
+					>
+						{activeStep === 0 ? (
+							<div className="space-y-4">
+								{isAdmin ? (
+									<div className="space-y-2">
+										<label className="block space-y-1">
+											<span className="text-technical text-muted">
+												Cohort / batch id
+											</span>
+											<input
+												type="text"
+												value={batchId}
+												onChange={(e) => setBatchId(e.target.value)}
+												aria-describedby="apply-batch-admin-hint"
+												className={`w-full bg-transparent border border-border px-3 py-2 min-h-11 font-sans ${PORTAL_FIELD_FOCUS}`}
+											/>
+										</label>
+										<p
+											id="apply-batch-admin-hint"
+											className="text-technical text-xs text-muted leading-relaxed"
+										>
+											Recruitment batch key for reviewers. Leave as default
+											unless you are routing this applicant to a specific
+											cohort.
+										</p>
+									</div>
+								) : null}
+								<label
+									className="block space-y-1"
+									htmlFor="application-full-name"
+								>
+									<span className="text-technical text-muted">
+										Full name
+										<RequiredMark />
+									</span>
+									<input
+										id="application-full-name"
+										ref={fullNameRef}
+										type="text"
+										autoComplete="name"
+										aria-required
+										value={answers.fullName}
+										aria-invalid={!!fieldErrors.fullName}
+										aria-describedby={
+											fieldErrors.fullName
+												? "application-full-name-error"
+												: undefined
+										}
+										onBlur={() =>
+											blurValidateField("fullName", answers.fullName)
+										}
+										onChange={(e) => {
+											setAnswers((a) => ({ ...a, fullName: e.target.value }));
+											setFieldErrors((f) => ({ ...f, fullName: "" }));
+										}}
+										className={`w-full bg-transparent border border-border px-3 py-2 min-h-11 font-sans ${PORTAL_FIELD_FOCUS}`}
+									/>
+									{fieldErrors.fullName ? (
+										<span
+											id="application-full-name-error"
+											className="text-xs text-danger"
+										>
+											{fieldErrors.fullName}
+										</span>
+									) : null}
+								</label>
+								<div className="space-y-2">
+									<span
+										className="text-technical text-muted block"
+										id="application-headshot-label"
+									>
+										Headshot
+										<RequiredMark />
+									</span>
+									<p
+										id="application-headshot-hint"
+										className="text-technical text-xs text-muted leading-relaxed"
+									>
+										Shoulders and up, clear lighting, no heavy filters—same kind
+										of photo you’d use on LinkedIn.
+									</p>
+									<input
+										ref={headshotInputRef}
+										type="file"
+										accept={APPLICATION_HEADSHOT_ACCEPT.join(",")}
+										className="sr-only"
+										tabIndex={-1}
+										aria-labelledby="application-headshot-label"
+										aria-describedby={
+											fieldErrors.headshotPath
+												? "application-headshot-error application-headshot-hint"
+												: "application-headshot-hint"
+										}
+										onChange={onHeadshotFileInputChange}
+									/>
+									{headshotDisplayUrl ? (
+										<img
+											src={headshotDisplayUrl}
+											alt="Headshot preview"
+											width={128}
+											height={128}
+											decoding="async"
+											className="h-32 w-32 rounded border border-border object-cover"
+										/>
+									) : null}
+									<div className="flex flex-wrap gap-3">
+										<button
+											ref={headshotPickRef}
+											type="button"
+											disabled={headshotUploading}
+											aria-invalid={!!fieldErrors.headshotPath}
+											aria-labelledby="application-headshot-label"
+											aria-describedby={
+												fieldErrors.headshotPath
+													? "application-headshot-error application-headshot-hint"
+													: "application-headshot-hint"
+											}
+											onClick={() => headshotInputRef.current?.click()}
+											className={`border border-border px-5 py-3 min-h-11 text-technical hover:border-ink transition-colors disabled:opacity-50 ${PORTAL_FIELD_FOCUS}`}
+										>
+											{headshotUploading
+												? "Uploading…"
+												: answers.headshotPath?.trim()
+													? "Replace photo"
+													: "Choose photo"}
+										</button>
+										{answers.headshotPath?.trim() ? (
+											<button
+												type="button"
+												disabled={headshotUploading}
+												onClick={() => void removeHeadshot()}
+												className={`border border-border px-5 py-3 min-h-11 text-technical text-muted hover:border-danger hover:text-danger transition-colors disabled:opacity-50 ${PORTAL_FIELD_FOCUS}`}
+											>
+												Remove photo
+											</button>
+										) : null}
+									</div>
+									{fieldErrors.headshotPath ? (
+										<p
+											id="application-headshot-error"
+											className="text-xs text-danger"
+										>
+											{fieldErrors.headshotPath}
+										</p>
+									) : null}
+								</div>
+								<label className="block space-y-1" htmlFor="application-major">
+									<span className="text-technical text-muted">
+										Major
+										<RequiredMark />
+									</span>
+									<input
+										id="application-major"
+										ref={majorRef}
+										type="text"
+										aria-required
+										value={answers.major}
+										aria-invalid={!!fieldErrors.major}
+										aria-describedby={
+											fieldErrors.major ? "application-major-error" : undefined
+										}
+										onBlur={() => blurValidateField("major", answers.major)}
+										onChange={(e) => {
+											setAnswers((a) => ({ ...a, major: e.target.value }));
+											setFieldErrors((f) => ({ ...f, major: "" }));
+										}}
+										className={`w-full bg-transparent border border-border px-3 py-2 min-h-11 font-sans ${PORTAL_FIELD_FOCUS}`}
+									/>
+									{fieldErrors.major ? (
+										<span
+											id="application-major-error"
+											className="text-xs text-danger"
+										>
+											{fieldErrors.major}
+										</span>
+									) : null}
+								</label>
+								<label
+									className="block space-y-1"
+									htmlFor="application-academic-year"
+								>
+									<span className="text-technical text-muted">
+										Academic year
+										<RequiredMark />
+									</span>
+									<input
+										id="application-academic-year"
+										ref={academicYearRef}
+										type="text"
+										placeholder="e.g. Sophomore"
+										aria-required
+										value={answers.academicYear}
+										aria-invalid={!!fieldErrors.academicYear}
+										aria-describedby={
+											fieldErrors.academicYear
+												? "application-academic-year-error"
+												: undefined
+										}
+										onBlur={() =>
+											blurValidateField("academicYear", answers.academicYear)
+										}
+										onChange={(e) => {
+											setAnswers((a) => ({
+												...a,
+												academicYear: e.target.value,
+											}));
+											setFieldErrors((f) => ({ ...f, academicYear: "" }));
+										}}
+										className={`w-full bg-transparent border border-border px-3 py-2 min-h-11 font-sans ${PORTAL_FIELD_FOCUS}`}
+									/>
+									{fieldErrors.academicYear ? (
+										<span
+											id="application-academic-year-error"
+											className="text-xs text-danger"
+										>
+											{fieldErrors.academicYear}
+										</span>
+									) : null}
+								</label>
+							</div>
+						) : null}
+
+						{activeStep === 1 ? (
+							<label className="block space-y-1" htmlFor="application-why-mecg">
+								<span className="text-technical text-muted">
+									Why MECG?
+									<RequiredMark />
+								</span>
+								<textarea
+									id="application-why-mecg"
+									ref={whyMecgRef}
+									rows={8}
+									aria-required
+									value={answers.whyMecg}
+									aria-invalid={!!fieldErrors.whyMecg}
+									aria-describedby={
+										fieldErrors.whyMecg
+											? "application-why-mecg-error"
+											: undefined
+									}
+									onBlur={() => blurValidateField("whyMecg", answers.whyMecg)}
+									onChange={(e) => {
+										setAnswers((a) => ({ ...a, whyMecg: e.target.value }));
+										setFieldErrors((f) => ({ ...f, whyMecg: "" }));
+									}}
+									className={`w-full min-h-44 bg-transparent border border-border px-3 py-2 font-sans ${PORTAL_FIELD_FOCUS}`}
+								/>
+								{fieldErrors.whyMecg ? (
+									<span
+										id="application-why-mecg-error"
+										className="text-xs text-danger"
+									>
+										{fieldErrors.whyMecg}
+									</span>
+								) : null}
+							</label>
+						) : null}
+
+						{activeStep === 2 ? (
+							<div className="space-y-1">
+								<label
+									className="block space-y-1"
+									htmlFor="application-resume-url"
+								>
+									<span className="text-technical text-muted">
+										Resume URL (optional)
+									</span>
+									<input
+										id="application-resume-url"
+										type="url"
+										placeholder="https://…"
+										value={answers.resumeUrl ?? ""}
+										onChange={(e) =>
+											setAnswers((a) => ({ ...a, resumeUrl: e.target.value }))
+										}
+										aria-describedby="application-resume-hint"
+										className={`w-full bg-transparent border border-border px-3 py-2 min-h-11 font-sans ${PORTAL_FIELD_FOCUS}`}
+									/>
+								</label>
+								<p
+									id="application-resume-hint"
+									className="text-technical text-xs text-muted leading-relaxed"
+								>
+									Use a link anyone can open (PDF or cloud) without signing
+									in—reviewers open it in a new tab.
+								</p>
+							</div>
+						) : null}
+					</fieldset>
+
+					<div className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-bg/95 backdrop-blur-md px-4 py-3 sm:static sm:z-auto sm:border-0 sm:bg-transparent sm:backdrop-blur-none sm:p-0 sm:mt-2">
+						<div className="max-w-6xl mx-auto flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+							<div className="flex flex-wrap gap-3 sm:gap-4">
+								<button
+									type="button"
+									disabled={saving}
+									onClick={() => void saveDraft()}
+									className="border border-border px-6 py-3 min-h-11 text-technical hover:border-ink transition-colors disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+								>
+									Save draft
+								</button>
+								<button
+									type="button"
+									disabled={saving || !submitReady}
+									onClick={() => openSubmitDialog()}
+									aria-describedby="apply-submit-help"
+									title={
+										!submitReady
+											? "Complete all required fields first"
+											: undefined
+									}
+									className={`px-6 py-3 min-h-11 text-technical transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
+										saving || !submitReady
+											? "cursor-not-allowed border border-border text-muted"
+											: "border border-accent text-accent hover:bg-accent hover:text-bg"
+									}`}
+								>
+									Submit application
+								</button>
+							</div>
+							<p
+								id="apply-submit-help"
+								className="text-technical text-xs text-ink/70 sm:max-w-md leading-relaxed order-first sm:order-none"
+							>
+								{!submitReady
+									? "Complete name, headshot, major, academic year, and Why MECG to enable submit."
+									: "Ready to submit — you'll confirm in the next step. After submit you cannot edit."}
+							</p>
+							<div
+								className="text-technical text-xs text-muted min-h-6 sm:ml-auto"
+								aria-live="polite"
+								aria-atomic="true"
+							>
+								{saveNotice === "saving" ? "Saving draft…" : null}
+								{saveNotice === "saved" ? "Draft saved." : null}
+								{saveNoticeError ? (
+									<span className="text-danger">{saveNoticeError}</span>
+								) : null}
+							</div>
+						</div>
+					</div>
+
+					<dialog
+						ref={submitDialogRef}
+						className="w-[min(100%,28rem)] max-h-[min(90dvh,32rem)] border border-border bg-bg p-6 text-ink shadow-xl backdrop:bg-bg/80"
+						aria-labelledby="apply-submit-dialog-title"
+					>
+						<div className="space-y-4">
+							<h2
+								id="apply-submit-dialog-title"
+								className="type-auth-state-title font-sans text-lg"
+							>
+								Submit application?
+							</h2>
+							<p className="text-sm text-muted leading-relaxed">
+								This sends your application to the recruitment team. You will
+								not be able to change your answers afterward. Use{" "}
+								<span className="text-technical text-ink">Save draft</span> if
+								you still need to edit.
+							</p>
+							<div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end pt-2">
+								<button
+									type="button"
+									onClick={closeSubmitDialog}
+									className="border border-border px-5 py-3 min-h-11 text-technical hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+								>
+									Keep editing
+								</button>
+								<button
+									type="button"
+									disabled={saving}
+									onClick={() => void confirmSubmit()}
+									className="border border-accent px-5 py-3 min-h-11 text-technical text-accent hover:bg-accent hover:text-bg disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+								>
+									{saving ? "Submitting…" : "Submit now"}
+								</button>
+							</div>
+						</div>
+					</dialog>
+				</div>
+			) : null}
+		</div>
+	);
+}

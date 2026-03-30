@@ -1,0 +1,3 @@
+# Not used by `bun run build` — keeps CLI uploads small (headshots ship from public/headshots).
+MECG Headshot RAWs/
+MECG Full Membership Roster W26.xlsx

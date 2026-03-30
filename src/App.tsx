@@ -3,47 +3,92 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useEffect } from 'react';
-import Lenis from '@studio-freight/lenis';
-import CustomCursor from './components/CustomCursor';
-import HeroSection from './components/HeroSection';
-import ImpactSection from './components/ImpactSection';
-import FirmSection from './components/FirmSection';
-import RecruitmentSection from './components/RecruitmentSection';
-import ContactSection from './components/ContactSection';
+import { lazy, Suspense } from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+
+import { AuthProvider } from "@/src/auth/AuthProvider";
+import AppShell from "@/src/components/AppShell";
+import { ProtectedRoute } from "@/src/components/ProtectedRoute";
+import PortalRouteSkeleton from "@/src/components/skeletons/PortalRouteSkeleton";
+import { ToastProvider } from "@/src/components/toast/ToastProvider";
+import LandingPage from "@/src/pages/LandingPage";
+import LoginPage from "@/src/pages/LoginPage";
+import ResetPasswordPage from "@/src/pages/ResetPasswordPage";
+import SignupPage from "@/src/pages/SignupPage";
+
+const ApplyPage = lazy(() => import("@/src/pages/ApplyPage"));
+const ReviewPage = lazy(() => import("@/src/pages/ReviewPage"));
+const NetworkPage = lazy(() => import("@/src/pages/NetworkPage"));
+const AdminRolesPage = lazy(() => import("@/src/pages/AdminRolesPage"));
+const PendingPage = lazy(() => import("@/src/pages/PendingPage"));
+const BalloonsDemoPage = lazy(() => import("@/src/pages/BalloonsDemoPage"));
 
 export default function App() {
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: 'vertical',
-      gestureOrientation: 'vertical',
-      smoothWheel: true,
-      wheelMultiplier: 1,
-      touchMultiplier: 2,
-    });
+	return (
+		<AuthProvider>
+			<ToastProvider>
+				<BrowserRouter>
+					<Suspense fallback={<PortalRouteSkeleton />}>
+						<Routes>
+							<Route path="/" element={<LandingPage />} />
+							<Route path="/login" element={<LoginPage />} />
+							<Route path="/signup" element={<SignupPage />} />
+							<Route path="/reset-password" element={<ResetPasswordPage />} />
+							<Route path="/balloons-demo" element={<BalloonsDemoPage />} />
+							<Route
+								path="/pending"
+								element={
+									<ProtectedRoute>
+										<PendingPage />
+									</ProtectedRoute>
+								}
+							/>
 
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
+							<Route
+								element={
+									<ProtectedRoute>
+										<AppShell />
+									</ProtectedRoute>
+								}
+							>
+								<Route path="/apply" element={<ApplyPage />} />
+							</Route>
 
-    requestAnimationFrame(raf);
+							<Route
+								element={
+									<ProtectedRoute roles={["reviewer", "admin"]}>
+										<AppShell />
+									</ProtectedRoute>
+								}
+							>
+								<Route path="/review" element={<ReviewPage />} />
+							</Route>
 
-    return () => {
-      lenis.destroy();
-    };
-  }, []);
+							<Route
+								element={
+									<ProtectedRoute roles={["alumni", "admin"]}>
+										<AppShell />
+									</ProtectedRoute>
+								}
+							>
+								<Route path="/network" element={<NetworkPage />} />
+							</Route>
 
-  return (
-    <div className="bg-bg text-ink min-h-screen selection:bg-accent selection:text-bg">
-      <CustomCursor />
-      <HeroSection />
-      <ImpactSection />
-      <FirmSection />
-      <RecruitmentSection />
-      <ContactSection />
-    </div>
-  );
+							<Route
+								element={
+									<ProtectedRoute roles={["admin"]}>
+										<AppShell />
+									</ProtectedRoute>
+								}
+							>
+								<Route path="/admin" element={<AdminRolesPage />} />
+							</Route>
+
+							<Route path="*" element={<Navigate to="/" replace />} />
+						</Routes>
+					</Suspense>
+				</BrowserRouter>
+			</ToastProvider>
+		</AuthProvider>
+	);
 }

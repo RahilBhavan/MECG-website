@@ -2,7 +2,16 @@ node_modules/
 build/
 dist/
 coverage/
+test-results/
+playwright-report/
+playwright/.cache/
 .DS_Store
 *.log
 .env*
 !.env.example
+.vercel
+
+# Local roster import sources (outputs: `bun run roster:import` → public/ + src/data)
+MECG Headshot RAWs/
+MECG Full Membership Roster W26.xlsx
+.cursor/hooks/
