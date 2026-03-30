@@ -9,41 +9,89 @@ import {
 } from "@/src/hooks/use-landing-scroll-reveals";
 
 const RECRUITMENT_PITCH_COPY =
-	"Our recruitment process is rigorous, designed to identify individuals who possess both analytical horsepower and creative vision. We seek those who are ready to shape the future of business and entertainment.";
+	"Winter 2026 recruitment is open to all majors. MECG is a pro-bono consulting group—if you want to learn consulting by doing real project work with a strong community, we want to meet you.";
 
+const WINTER_2026_INTEREST_FORM_URL =
+	"https://docs.google.com/forms/d/e/1FAIpQLSfl5DsinBYuXXCRe3C1dmurOyTKD39Tny6amT-_UPNt87cQSg/viewform?usp=header";
+
+/** Winter 2026 timeline — aligned with mecgmichigan.com/join. */
 const timelineEvents = [
-	{ date: "SEP 05", name: "Mass Meeting I", location: "EECS 1311, 7:00 PM" },
-	{ date: "SEP 07", name: "Mass Meeting II", location: "DOW 1013, 7:00 PM" },
 	{
-		date: "SEP 09",
-		name: "Coffee Chats",
-		location: "Duderstadt Center, 1:00 PM",
+		date: "JAN 13",
+		name: "Winterfest",
+		location: "Pendleton (Table 16), 4:00–7:00 PM",
 	},
 	{
-		date: "SEP 12",
-		name: "Application Deadline",
+		date: "JAN 16",
+		name: "Mass meeting",
+		location: "CCCB B0420, 6:00–7:00 PM",
+	},
+	{
+		date: "JAN 16",
+		name: "Application opens",
+		location: "Online, 8:00 PM",
+	},
+	{
+		date: "JAN 20",
+		name: "Career panel",
+		location: "NUB 1528, 8:00–9:00 PM",
+	},
+	{
+		date: "JAN 22",
+		name: "Meet the members",
+		location: "Weiser 110, 6:00–7:30 PM",
+	},
+	{
+		date: "JAN 23",
+		name: "Office hours",
+		location: "Zoom, 4:00–6:00 PM",
+	},
+	{
+		date: "JAN 24",
+		name: "Application closes",
 		location: "Online, 11:59 PM",
 	},
-	{ date: "SEP 15", name: "First Round Interviews", location: "Invite Only" },
-	{ date: "SEP 18", name: "Final Round Interviews", location: "Invite Only" },
+	{
+		date: "JAN 27",
+		name: "Speed dating",
+		location: "Invite only",
+	},
+	{
+		date: "JAN 29",
+		name: "Group case activity",
+		location: "Invite only",
+	},
+	{
+		date: "FEB 02–03",
+		name: "Interviews",
+		location: "Invite only",
+	},
 ];
 
 const faqs = [
 	{
-		q: "What majors do you accept?",
-		a: "We accept all majors. While our roots are in engineering, we value diverse perspectives and analytical minds from any discipline.",
+		q: "What prior experience do I need to join MECG?",
+		a: "None. We teach consulting fundamentals through training, mentorship, and project work—many members join with no prior consulting background.",
 	},
 	{
-		q: "What is the time commitment?",
-		a: "Expect 5-8 hours per week, including general body meetings, project work, and professional development workshops.",
+		q: "What is the expected time commitment for members?",
+		a: "Plan for roughly 5–8 hours per week across general body meetings, client project work, and professional development.",
 	},
 	{
-		q: "Do I need prior consulting experience?",
-		a: "No prior experience is required. We provide comprehensive training during your first semester as an Analyst.",
+		q: "Who is eligible to apply—are there restrictions by major or year?",
+		a: "We are open to all majors at the University of Michigan. Specific term details are posted with each application cycle.",
 	},
 	{
-		q: "How are projects sourced?",
-		a: "We partner with a range of clients, from local startups to Fortune 500 companies, focusing on data-driven strategy and operational improvements.",
+		q: "What will my first semester as a member look like?",
+		a: "New analysts onboard through team meetings, skills workshops, and real engagements alongside mentors and project leads.",
+	},
+	{
+		q: "What does the recruitment process look like?",
+		a: "Open rush events and an application, followed by invite-only activities (such as interviews) for selected candidates—see the timeline above.",
+	},
+	{
+		q: "What kind of professional development does MECG offer?",
+		a: "Workshops, case practice, and client-facing experience across our pillars: Professional Development, Education, Project Experience, and Community.",
 	},
 ];
 
@@ -79,16 +127,16 @@ export default function RecruitmentSection() {
 			<div className="mx-auto max-w-7xl px-4 sm:px-6">
 				{/* The Pitch */}
 				<div ref={pitchRef} className="mb-20 md:mb-28">
-					<h2 className="reveal-up type-marketing-kicker mb-4 text-muted">
+					<h2 className="reveal-up type-marketing-kicker marketing-section-accent-rail mb-4 text-muted">
 						<span className="text-accent">[04]</span> JOIN THE FIRM
 					</h2>
 					<h3 className="type-marketing-display-xl reveal-up mb-8">
 						WE ARE LOOKING FOR
 						<br />
-						EXCEPTIONAL TALENT.
+						<span className="text-accent">EXCEPTIONAL</span> TALENT.
 					</h3>
 					<p
-						className={`reveal-up w-full text-lg font-sans font-light text-muted ${balancedPitchMaxWidthPx == null ? "max-w-2xl" : "max-w-full"}`}
+						className={`type-marketing-body-lg reveal-up w-full text-muted ${balancedPitchMaxWidthPx == null ? "max-w-2xl" : "max-w-full"}`}
 						style={
 							balancedPitchMaxWidthPx != null
 								? { maxWidth: balancedPitchMaxWidthPx }
@@ -106,16 +154,24 @@ export default function RecruitmentSection() {
 						</Link>
 						<Link
 							to="/login"
-							className="btn-marketing-outline w-full border-accent/35 bg-surface/30 sm:w-auto"
+							className="btn-marketing-outline w-full border-border-strong bg-surface/30 sm:w-auto"
 						>
 							Already recruiting? Sign in
 						</Link>
+						<a
+							href={WINTER_2026_INTEREST_FORM_URL}
+							target="_blank"
+							rel="noreferrer"
+							className="btn-marketing-outline w-full border-border-strong/60 text-center sm:w-auto"
+						>
+							Winter 2026 interest form
+						</a>
 					</div>
 				</div>
 			</div>
 
 			{/* Full-bleed band: timeline + FAQs */}
-			<div className="marketing-full-bleed border-y border-border bg-surface/25 py-16 md:py-24">
+			<div className="marketing-full-bleed border-y border-border bg-surface/25 py-16 light:bg-surface/50 md:py-24">
 				<div className="mx-auto max-w-7xl px-4 sm:px-6">
 					<div ref={timelineRef}>
 						<h2 className="reveal-up type-marketing-kicker mb-12 text-muted md:mb-16">
@@ -133,12 +189,12 @@ export default function RecruitmentSection() {
 								>
 									<div
 										aria-hidden
-										className="pointer-events-none absolute left-0 top-0 bottom-0 w-0.5 bg-transparent transition-colors duration-200 group-hover:bg-[var(--color-marketing-cta)]/70"
+										className="pointer-events-none absolute left-0 top-0 bottom-0 w-0.5 bg-transparent transition-colors duration-200 group-hover:bg-accent/40 group-focus-within:bg-accent/40"
 									/>
 									<div className="mb-0 w-32 shrink-0 text-technical text-muted transition-colors group-hover:text-ink">
 										{event.date}
 									</div>
-									<div className="min-w-0 flex-1 text-xl font-display tracking-wide text-ink-secondary md:text-2xl">
+									<div className="type-marketing-subhead-display min-w-0 flex-1 text-ink-secondary">
 										{event.name}
 									</div>
 									<div className="w-full lg:w-auto lg:text-right">
@@ -170,7 +226,7 @@ export default function RecruitmentSection() {
 								const isOpen = openFaq === i;
 								return (
 									<div key={i} className="reveal-up border-b border-border">
-										<h3 className="font-display text-xl md:text-2xl tracking-wide">
+										<h3 className="type-marketing-subhead-display text-ink">
 											<button
 												type="button"
 												id={headerId}
@@ -192,7 +248,7 @@ export default function RecruitmentSection() {
 											hidden={!isOpen}
 											className="border-t border-border/60 bg-bg/40 px-4 pb-8 pt-4"
 										>
-											<p className="max-w-3xl font-sans font-light leading-relaxed text-muted">
+											<p className="type-marketing-body max-w-3xl text-muted">
 												{faq.a}
 											</p>
 										</section>

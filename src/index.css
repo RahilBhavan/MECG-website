@@ -1,5 +1,161 @@
 @import "tailwindcss";
 
+/* Class-based dark/light variants (html carries .dark / .light from next-themes). */
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant light (&:where(.light, .light *));
+
+/*
+ * Runtime palette tokens — :root defaults to dark; html.light overrides for light mode.
+ * @theme below aliases these so Tailwind utilities stay stable.
+ */
+:root {
+	color-scheme: dark;
+
+	--mecg-bg: #111111;
+	--mecg-bg-raised: #181818;
+	--mecg-surface: #212121;
+	/* Deeper banding + lift (hero strips, footers, contrast sections) */
+	--mecg-bg-deep: #0a0a0a;
+	--mecg-bg-subtle: #141414;
+
+	--mecg-ink: #fafafa;
+	--mecg-ink-secondary: #e5e5e5;
+	--mecg-muted: #b8b8b8;
+	--mecg-ink-faint: #8a8a8a;
+
+	--mecg-border: #404040;
+	--mecg-border-strong: #5c5c5c;
+
+	--mecg-accent: #c9a962;
+	--mecg-accent-hover: #e2c77e;
+	--mecg-accent-muted: #352e1f;
+	/* Accent ramp — chips, borders, hover washes */
+	--mecg-accent-subtle: #2a2419;
+	--mecg-accent-strong: #dcc07a;
+	--mecg-link: #d4b56e;
+	--mecg-link-hover: #e8cf92;
+
+	--mecg-success: #86efac;
+	--mecg-success-bg: #1a3228;
+	--mecg-warning: #fde68a;
+	--mecg-warning-bg: #352f14;
+	--mecg-danger: #fca5a5;
+	--mecg-danger-bg: #321a1e;
+	/* Neutral “info” (badges, tips, non-destructive callouts) */
+	--mecg-info: #93c5fd;
+	--mecg-info-bg: #172554;
+	/* Data / diagrams — copper-adjacent, distinct from semantic status */
+	--mecg-chart-1: #c9a962;
+	--mecg-chart-2: #9a8b6f;
+	--mecg-chart-3: #6b5e52;
+	/* Frosted panels + modal scrims */
+	--mecg-glass: rgb(24 24 24 / 0.72);
+	--mecg-overlay: rgb(0 0 0 / 0.65);
+	/* Text selection (copper wash on dark) */
+	--mecg-selection-bg: #3d3520;
+	--mecg-selection-text: #fafaf9;
+
+	--mecg-focus-ring: #e8e8e8;
+
+	--mecg-background: #111111;
+	--mecg-foreground: #fafafa;
+	--mecg-primary: #c9a962;
+	--mecg-primary-foreground: #111111;
+	--mecg-secondary: #2e2e2e;
+	--mecg-secondary-foreground: #fafafa;
+	--mecg-destructive: #dc2626;
+	--mecg-destructive-foreground: #fafafa;
+	--mecg-muted-foreground: #a8a8a8;
+	--mecg-input: #404040;
+	--mecg-ring: #e8e8e8;
+
+	--mecg-shadow-marketing-md: 0 10px 40px -12px rgb(0 0 0 / 0.55);
+	--mecg-shadow-marketing-lg: 0 24px 60px -20px rgb(0 0 0 / 0.65);
+	--mecg-shadow-header: 0 10px 36px -20px rgb(0 0 0 / 0.55);
+	--mecg-shadow-sticky-up: 0 -12px 40px rgb(0 0 0 / 0.45);
+	--mecg-shadow-sticky-up-soft: 0 -12px 40px rgb(0 0 0 / 0.35);
+	--mecg-shadow-sticky-down: 0 12px 32px -20px rgb(0 0 0 / 0.5);
+	--mecg-shadow-sticky-bar-sm: 0 -8px 40px -28px rgb(0 0 0 / 0.45);
+	--mecg-shadow-nav-dock: 0 12px 40px -24px rgb(0 0 0 / 0.75);
+	--mecg-shadow-card-hover: 0 20px 50px -24px rgb(0 0 0 / 0.65);
+	--mecg-shadow-hero-kicker: 0 12px 40px -20px rgb(0 0 0 / 0.75);
+	--mecg-hero-text-shadow: 0 2px 48px rgb(0 0 0 / 0.85);
+
+	/* PWA / browser chrome (mirrored in ThemeColorMeta for live updates). */
+	--mecg-theme-color: #111111;
+}
+
+html.light {
+	color-scheme: light;
+
+	--mecg-bg: #fafaf9;
+	/* Match page — avoids warm grey cards on cool white (impact strip, nav, panels). */
+	--mecg-bg-raised: #fafaf9;
+	--mecg-surface: #e7e5e4;
+	--mecg-bg-deep: #e8e6e3;
+	--mecg-bg-subtle: #fdfcfa;
+
+	--mecg-ink: #1c1917;
+	--mecg-ink-secondary: #44403c;
+	--mecg-muted: #78716c;
+	--mecg-ink-faint: #a8a29e;
+
+	--mecg-border: #d6d3d1;
+	--mecg-border-strong: #a8a29e;
+
+	--mecg-accent: #a67c29;
+	--mecg-accent-hover: #8f6820;
+	--mecg-accent-muted: #f5f0e6;
+	--mecg-accent-subtle: #faf6ef;
+	--mecg-accent-strong: #7a5a1c;
+	--mecg-link: #8f6820;
+	--mecg-link-hover: #6b4714;
+
+	--mecg-success: #15803d;
+	--mecg-success-bg: #dcfce7;
+	--mecg-warning: #a16207;
+	--mecg-warning-bg: #fef9c3;
+	--mecg-danger: #b91c1c;
+	--mecg-danger-bg: #fee2e2;
+	--mecg-info: #1d4ed8;
+	--mecg-info-bg: #dbeafe;
+	--mecg-chart-1: #a67c29;
+	--mecg-chart-2: #78716c;
+	--mecg-chart-3: #a8a29e;
+	--mecg-glass: rgb(255 255 255 / 0.78);
+	--mecg-overlay: rgb(28 25 23 / 0.45);
+	--mecg-selection-bg: #e8dcc8;
+	--mecg-selection-text: #1c1917;
+
+	--mecg-focus-ring: #292524;
+
+	--mecg-background: #fafaf9;
+	--mecg-foreground: #1c1917;
+	--mecg-primary: #a67c29;
+	--mecg-primary-foreground: #fafaf9;
+	--mecg-secondary: #e7e5e4;
+	--mecg-secondary-foreground: #1c1917;
+	--mecg-destructive: #dc2626;
+	--mecg-destructive-foreground: #fafaf9;
+	--mecg-muted-foreground: #57534e;
+	--mecg-input: #d6d3d1;
+	--mecg-ring: #44403c;
+
+	--mecg-shadow-marketing-md: 0 10px 40px -12px rgb(28 25 23 / 0.12);
+	--mecg-shadow-marketing-lg: 0 24px 60px -20px rgb(28 25 23 / 0.16);
+	--mecg-shadow-header: 0 10px 36px -20px rgb(28 25 23 / 0.08);
+	--mecg-shadow-sticky-up: 0 -12px 40px rgb(28 25 23 / 0.1);
+	--mecg-shadow-sticky-up-soft: 0 -12px 40px rgb(28 25 23 / 0.08);
+	--mecg-shadow-sticky-down: 0 12px 32px -20px rgb(28 25 23 / 0.1);
+	--mecg-shadow-sticky-bar-sm: 0 -8px 40px -28px rgb(28 25 23 / 0.08);
+	--mecg-shadow-nav-dock: 0 12px 40px -24px rgb(28 25 23 / 0.12);
+	--mecg-shadow-card-hover: 0 20px 50px -24px rgb(28 25 23 / 0.14);
+	--mecg-shadow-hero-kicker: 0 12px 40px -20px rgb(28 25 23 / 0.12);
+	--mecg-hero-text-shadow: 0 2px 48px rgb(28 25 23 / 0.18);
+
+	--mecg-theme-color: #fafaf9;
+}
+
 @theme {
 	/* Two families only: Inter (UI + labels) + Playfair (display). Bundled via Fontsource in main.tsx (latin subset). */
 	--font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
@@ -25,60 +181,100 @@
 		var(--color-marketing-cta) 22%,
 		transparent
 	);
-	--shadow-marketing-md: 0 10px 40px -12px rgb(0 0 0 / 0.55);
-	--shadow-marketing-lg: 0 24px 60px -20px rgb(0 0 0 / 0.65);
+	--shadow-marketing-md: var(--mecg-shadow-marketing-md);
+	--shadow-marketing-lg: var(--mecg-shadow-marketing-lg);
+	--shadow-header: var(--mecg-shadow-header);
+	--shadow-sticky-up: var(--mecg-shadow-sticky-up);
+	--shadow-sticky-up-soft: var(--mecg-shadow-sticky-up-soft);
+	--shadow-sticky-down: var(--mecg-shadow-sticky-down);
+	--shadow-sticky-bar-sm: var(--mecg-shadow-sticky-bar-sm);
+	--shadow-nav-dock: var(--mecg-shadow-nav-dock);
+	--shadow-card-elevated: var(--mecg-shadow-card-hover);
+	--shadow-hero-kicker: var(--mecg-shadow-hero-kicker);
 	--space-marketing-section: 2rem;
 	--space-marketing-hero-pad: 4rem;
 
-	/* Surfaces — dark-first editorial base (lifted for a fresher, less OLED-flat read) */
-	--color-bg: #111111;
-	--color-bg-raised: #181818;
-	--color-surface: #212121;
+	/* Surfaces — driven by --mecg-* */
+	--color-bg: var(--mecg-bg);
+	--color-bg-raised: var(--mecg-bg-raised);
+	--color-surface: var(--mecg-surface);
+	--color-mecg-bg-deep: var(--mecg-bg-deep);
+	--color-mecg-bg-subtle: var(--mecg-bg-subtle);
 
 	/* Text */
-	--color-ink: #fafafa;
-	--color-ink-secondary: #e5e5e5;
-	--color-muted: #b8b8b8;
+	--color-ink: var(--mecg-ink);
+	--color-ink-secondary: var(--mecg-ink-secondary);
+	--color-muted: var(--mecg-muted);
+	--color-mecg-ink-faint: var(--mecg-ink-faint);
 
-	/* Borders — slightly clearer hairlines */
-	--color-border: #404040;
-	--color-border-strong: #5c5c5c;
+	/* Borders */
+	--color-border: var(--mecg-border);
+	--color-border-strong: var(--mecg-border-strong);
+	--color-mecg-border-accent: color-mix(
+		in srgb,
+		var(--color-accent) 42%,
+		transparent
+	);
 
-	/* Brand accent — muted copper */
-	--color-accent: #c9a962;
-	--color-accent-hover: #e2c77e;
-	--color-accent-muted: #352e1f;
+	/* Brand accent */
+	--color-accent: var(--mecg-accent);
+	--color-accent-hover: var(--mecg-accent-hover);
+	--color-accent-muted: var(--mecg-accent-muted);
+	--color-mecg-accent-subtle: var(--mecg-accent-subtle);
+	--color-mecg-accent-strong: var(--mecg-accent-strong);
+	--color-mecg-link: var(--mecg-link);
+	--color-mecg-link-hover: var(--mecg-link-hover);
 
-	/* Semantic — status & reviewer verdicts (tints lifted with base) */
-	--color-success: #86efac;
-	--color-success-bg: #1a3228;
-	--color-warning: #fde68a;
-	--color-warning-bg: #352f14;
-	--color-danger: #fca5a5;
-	--color-danger-bg: #321a1e;
+	/* Semantic */
+	--color-success: var(--mecg-success);
+	--color-success-bg: var(--mecg-success-bg);
+	--color-warning: var(--mecg-warning);
+	--color-warning-bg: var(--mecg-warning-bg);
+	--color-danger: var(--mecg-danger);
+	--color-danger-bg: var(--mecg-danger-bg);
+	--color-mecg-info: var(--mecg-info);
+	--color-mecg-info-bg: var(--mecg-info-bg);
 
-	/* Focus — high visibility on dark UI */
-	--color-focus-ring: #e8e8e8;
+	/* Charts / multi-series visuals */
+	--color-mecg-chart-1: var(--mecg-chart-1);
+	--color-mecg-chart-2: var(--mecg-chart-2);
+	--color-mecg-chart-3: var(--mecg-chart-3);
 
-	/* shadcn/ui semantic tokens (components/ui — Button, etc.) — no duplicate --color-accent/--color-muted (those stay brand + body text) */
-	--color-background: #111111;
-	--color-foreground: #fafafa;
-	--color-primary: #c9a962;
-	--color-primary-foreground: #111111;
-	--color-secondary: #2e2e2e;
-	--color-secondary-foreground: #fafafa;
-	--color-destructive: #dc2626;
-	--color-destructive-foreground: #fafafa;
-	--color-muted-foreground: #a8a8a8;
-	--color-input: #404040;
-	--color-ring: #e8e8e8;
+	/* Overlays */
+	--color-mecg-glass: var(--mecg-glass);
+	--color-mecg-overlay: var(--mecg-overlay);
+	--color-mecg-selection-bg: var(--mecg-selection-bg);
+	--color-mecg-selection-text: var(--mecg-selection-text);
+
+	--color-focus-ring: var(--mecg-focus-ring);
+
+	/* shadcn/ui semantic tokens */
+	--color-background: var(--mecg-background);
+	--color-foreground: var(--mecg-foreground);
+	--color-primary: var(--mecg-primary);
+	--color-primary-foreground: var(--mecg-primary-foreground);
+	--color-secondary: var(--mecg-secondary);
+	--color-secondary-foreground: var(--mecg-secondary-foreground);
+	--color-destructive: var(--mecg-destructive);
+	--color-destructive-foreground: var(--mecg-destructive-foreground);
+	--color-muted-foreground: var(--mecg-muted-foreground);
+	--color-input: var(--mecg-input);
+	--color-ring: var(--mecg-ring);
 
 	/* Hero static mesh — copper wash + faint accent (editorial luxe) */
 	--color-hero-radial-mid: color-mix(
 		in srgb,
 		var(--color-accent-muted) 28%,
-		color-mix(in srgb, var(--color-marketing-cta) 12%, transparent) 100%
+		color-mix(in srgb, var(--color-marketing-cta) 18%, transparent) 100%
 	);
+}
+
+/* Marketing — vertical copper rail for section index lines ([NN] …) */
+.marketing-section-accent-rail {
+	border-left: 2px solid
+		color-mix(in srgb, var(--color-accent) 58%, transparent);
+	padding-left: 0.75rem;
+	margin-left: -0.125rem;
 }
 
 html {
@@ -96,6 +292,12 @@ body {
 	-moz-osx-font-smoothing: grayscale;
 	/* Default cursor site-wide; marketing landing uses .cursor-none + CustomCursor */
 	cursor: auto;
+}
+
+/* Default text selection — pages may override with `selection:*` utilities. */
+::selection {
+	background-color: var(--mecg-selection-bg);
+	color: var(--mecg-selection-text);
 }
 
 /* Full-viewport pages on mobile (Safari toolbar, home indicator) */
@@ -204,7 +406,9 @@ button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible,
-summary:focus-visible {
+summary:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
 	outline: 2px solid var(--color-focus-ring);
 	outline-offset: 2px;
 }
@@ -214,7 +418,19 @@ button:focus:not(:focus-visible) {
 	outline: none;
 }
 
-/* Custom Cursor */
+/* Portal / apply forms — shared field focus (matches ApplyPage PORTAL_FIELD_FOCUS intent) */
+.portal-field-focus {
+	outline: none;
+}
+.portal-field-focus:focus {
+	border-color: var(--color-ink);
+}
+.portal-field-focus:focus-visible {
+	outline: 2px solid var(--color-focus-ring);
+	outline-offset: 2px;
+}
+
+/* Custom Cursor — difference blend reads poorly on light backgrounds */
 .custom-cursor {
 	position: fixed;
 	top: 0;
@@ -233,11 +449,21 @@ button:focus:not(:focus-visible) {
 	mix-blend-mode: difference;
 }
 
+html.light .custom-cursor {
+	mix-blend-mode: normal;
+	border-color: var(--color-ink);
+	opacity: 0.85;
+}
+
 .custom-cursor.hovering {
 	width: 60px;
 	height: 60px;
 	background-color: var(--color-ink);
 	opacity: 0.2;
+}
+
+html.light .custom-cursor.hovering {
+	opacity: 0.15;
 }
 
 /* Brutalist Typography — hero lockup (marketing: type leads, canvas stays subtle) */
@@ -294,7 +520,7 @@ button:focus:not(:focus-visible) {
 	outline-offset: 2px;
 }
 
-/* Outline / ghost for dark backgrounds — Sign in, secondary */
+/* Outline / ghost — Sign in, secondary */
 .btn-marketing-outline {
 	cursor: pointer;
 	display: inline-flex;
@@ -349,6 +575,107 @@ button:focus:not(:focus-visible) {
 	font-variant-numeric: tabular-nums;
 }
 
+/*
+ * Marketing type ladder (landing sections) — use these instead of ad-hoc text-lg / text-2xl:
+ * 1. type-marketing-hero — full-viewport display lockup
+ * 2. type-marketing-display-xl — loud chapter openers (e.g. Join)
+ * 3. type-marketing-section — H2/H3 under [NN] kickers
+ * 4. type-marketing-card-title — impact case cards, roster names
+ * 5. type-marketing-pillar-title — sans pillar list (Impact foundations)
+ * 6. type-marketing-subhead-display — timeline titles, FAQ questions (display, xl→2xl)
+ * 7. type-marketing-body-lg / type-marketing-body — lead paragraphs
+ * 8. type-marketing-body-sm — card blurbs, dense copy (often with text-muted)
+ * 9. type-marketing-quote — long italic display blocks (president welcome)
+ * 10. type-marketing-meta — footer address, fine print
+ */
+.type-marketing-body {
+	font-family: var(--font-sans);
+	font-size: 1rem;
+	font-weight: 300;
+	line-height: var(--leading-body);
+}
+
+.type-marketing-body-lg {
+	font-family: var(--font-sans);
+	font-size: 1.125rem;
+	font-weight: 300;
+	line-height: var(--leading-body);
+}
+
+@media (min-width: 768px) {
+	.type-marketing-body-lg {
+		font-size: 1.25rem;
+	}
+}
+
+.type-marketing-body-sm {
+	font-family: var(--font-sans);
+	font-size: 0.875rem;
+	font-weight: 300;
+	line-height: 1.62;
+}
+
+.type-marketing-card-title {
+	font-family: var(--font-display);
+	font-size: 1.5rem;
+	line-height: 1.15;
+	letter-spacing: -0.02em;
+}
+
+@media (min-width: 640px) {
+	.type-marketing-card-title {
+		font-size: 1.875rem;
+	}
+}
+
+.type-marketing-pillar-title {
+	font-family: var(--font-sans);
+	font-size: 1.5rem;
+	font-weight: 500;
+	line-height: 1.2;
+	letter-spacing: -0.02em;
+}
+
+@media (min-width: 768px) {
+	.type-marketing-pillar-title {
+		font-size: 2.25rem;
+	}
+}
+
+.type-marketing-subhead-display {
+	font-family: var(--font-display);
+	font-size: 1.25rem;
+	line-height: 1.25;
+	letter-spacing: 0.02em;
+}
+
+@media (min-width: 768px) {
+	.type-marketing-subhead-display {
+		font-size: 1.5rem;
+	}
+}
+
+.type-marketing-quote {
+	font-family: var(--font-display);
+	font-size: 1.125rem;
+	font-style: italic;
+	font-weight: 400;
+	line-height: var(--leading-body);
+}
+
+@media (min-width: 768px) {
+	.type-marketing-quote {
+		font-size: 1.25rem;
+	}
+}
+
+.type-marketing-meta {
+	font-family: var(--font-sans);
+	font-size: 0.875rem;
+	font-weight: 300;
+	line-height: 1.62;
+}
+
 /* Break out of max-width column to viewport width (horizontal strips, bands) */
 .marketing-full-bleed {
 	position: relative;
@@ -397,4 +724,9 @@ html.lenis body {
 
 .lenis.lenis-smooth iframe {
 	pointer-events: none;
+}
+
+/* Hero headline depth — tokenized for light/dark */
+.marketing-hero-text-shadow {
+	filter: drop-shadow(var(--mecg-hero-text-shadow));
 }

@@ -11,11 +11,11 @@ export function LandingJsonLd() {
 			{
 				"@type": "Organization",
 				"@id": `${origin}/#organization`,
-				name: "Michigan Economics Consulting Group",
+				name: "Michigan Engineering Consulting Group",
 				alternateName: "MECG",
 				url: origin,
 				description:
-					"Selective economics consulting community at the University of Michigan.",
+					"Pro-bono consulting group open to all majors at the University of Michigan.",
 			},
 			{
 				"@type": "WebSite",

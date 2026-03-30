@@ -104,7 +104,7 @@ export function FirmRosterVirtualList({
 					>
 						<div className="firm-row group flex cursor-pointer flex-col items-start justify-between gap-4 border-b border-border px-4 py-6 transition-colors hover:bg-accent-muted/25 lg:flex-row lg:items-center lg:gap-0">
 							<div className="flex min-w-0 w-full items-center gap-6 lg:mb-0 lg:w-auto lg:gap-8">
-								<div className="h-16 w-16 shrink-0 overflow-hidden rounded-full border border-border-strong/40 opacity-95 ring-1 ring-border transition-opacity duration-500 group-hover:border-accent/45 group-hover:opacity-100">
+								<div className="h-16 w-16 shrink-0 overflow-hidden rounded-full border border-border-strong/40 ring-1 ring-border transition-colors duration-500 group-hover:border-accent/35">
 									<img
 										src={member.imageSrc}
 										alt={member.displayName}
@@ -112,11 +112,11 @@ export function FirmRosterVirtualList({
 										height={128}
 										loading="lazy"
 										decoding="async"
-										className="h-full w-full object-cover grayscale contrast-125 opacity-80 transition-all duration-500 ease-out group-hover:scale-110 group-hover:opacity-100"
+										className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
 										referrerPolicy="no-referrer"
 									/>
 								</div>
-								<h4 className="min-w-0 break-words text-2xl font-display tracking-wide md:text-3xl">
+								<h4 className="type-marketing-card-title min-w-0 break-words tracking-wide">
 									{member.displayName}
 								</h4>
 							</div>

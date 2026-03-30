@@ -5,6 +5,21 @@ import type { Metric } from "web-vitals";
  * Wire your collector to accept small JSON bodies; no-op if unset.
  */
 export function initReportWebVitals(): void {
+	if (import.meta.env.DEV) {
+		void import("web-vitals").then(({ onLCP }) => {
+			onLCP((metric) => {
+				// Dev-only: surfaces LCP element + rating for hero / marketing tuning
+				console.debug(
+					"[web-vitals:LCP]",
+					Math.round(metric.value),
+					"ms",
+					metric.rating,
+					metric.entries[0]?.element ?? "(no element)",
+				);
+			});
+		});
+	}
+
 	const endpoint = import.meta.env.VITE_WEB_VITALS_ENDPOINT?.trim();
 	if (!import.meta.env.PROD || !endpoint?.startsWith("https://")) return;
 

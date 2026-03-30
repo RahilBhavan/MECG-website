@@ -52,7 +52,7 @@ export function ReviewPageSkeleton() {
 					</div>
 				</div>
 
-				<div className="fixed bottom-0 left-0 right-0 z-[120] border-t border-border bg-bg p-4 space-y-3 shadow-[0_-12px_40px_rgba(0,0,0,0.35)] lg:hidden">
+				<div className="fixed bottom-0 left-0 right-0 z-[120] border-t border-border bg-bg p-4 space-y-3 shadow-sticky-up-soft lg:hidden">
 					<div className="h-4 w-32 rounded bg-ink/10" />
 					<div className="h-11 w-full rounded border border-border bg-ink/5" />
 					<div className="h-24 w-full rounded border border-border bg-ink/5" />

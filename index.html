@@ -6,21 +6,39 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <title>MECG — Michigan Economics Consulting Group</title>
+    <title>MECG — Michigan Engineering Consulting Group</title>
     <meta
       name="description"
-      content="Michigan Engineering Consulting Group (MECG): selective economics consulting community at the University of Michigan. Applications, alumni network, and member resources."
+      content="Michigan Engineering Consulting Group (MECG): pro-bono consulting open to all majors at the University of Michigan. Apply, alumni network, and member resources."
     />
     <meta name="theme-color" content="#111111" />
+    <!-- next-themes storageKey must match THEME_STORAGE_KEY in src/lib/theme-constants.ts -->
+    <script>
+      (() => {
+        var k, t, d;
+        try {
+          k = "mecg-theme";
+          t = localStorage.getItem(k);
+          d = document.documentElement;
+          if (t === "light") {
+            d.classList.add("light");
+            d.style.colorScheme = "light";
+          } else if (t === "dark") {
+            d.classList.add("dark");
+            d.style.colorScheme = "dark";
+          }
+        } catch (_e) {}
+      })();
+    </script>
     <link rel="canonical" href="__SITE_URL__/" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="MECG — Michigan Economics Consulting Group" />
+    <meta property="og:title" content="MECG — Michigan Engineering Consulting Group" />
     <meta
       property="og:description"
-      content="Selective economics consulting community at the University of Michigan. Apply, connect with alumni, and access member tools."
+      content="Pro-bono consulting open to all majors at the University of Michigan. Apply, connect with alumni, and access member tools."
     />
     <meta property="og:url" content="__SITE_URL__/" />
     <meta property="og:image" content="__SITE_URL__/og.png" />
@@ -30,10 +48,10 @@
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="MECG — Michigan Economics Consulting Group" />
+    <meta name="twitter:title" content="MECG — Michigan Engineering Consulting Group" />
     <meta
       name="twitter:description"
-      content="Selective economics consulting community at the University of Michigan."
+      content="Pro-bono consulting open to all majors at the University of Michigan."
     />
     <meta name="twitter:image" content="__SITE_URL__/og.png" />
   </head>

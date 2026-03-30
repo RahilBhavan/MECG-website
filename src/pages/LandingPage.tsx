@@ -18,13 +18,32 @@ const LandingMainLazy = lazy(() =>
 /** Offset for sticky sub-nav + safe top padding when scrolling to section anchors (taller on small screens when nav wraps). */
 const NAV_SCROLL_OFFSET = -72;
 
-function LandingMainFallback() {
+function LandingMainFallback({
+	deepLinkTargetId,
+}: {
+	deepLinkTargetId: string | null;
+}) {
 	return (
-		<div className="min-h-[50vh] animate-pulse border-t border-border bg-bg">
-			<div className="h-12 border-b border-border bg-surface/60" />
-			<div className="mx-auto max-w-7xl space-y-8 px-6 py-16">
-				<div className="h-32 max-w-md rounded border border-border bg-surface/50" />
-				<div className="h-64 rounded border border-border bg-surface/40" />
+		<div className="min-h-[50vh] border-t border-border bg-bg">
+			{deepLinkTargetId ? (
+				<p
+					role="status"
+					aria-live="polite"
+					aria-busy="true"
+					className="type-marketing-body-sm border-b border-border bg-surface/40 px-4 py-3 text-center text-muted sm:px-6"
+				>
+					Loading page sections…{" "}
+					<span className="text-ink/80">
+						(scrolling to #{deepLinkTargetId} when ready)
+					</span>
+				</p>
+			) : null}
+			<div className="animate-pulse">
+				<div className="h-12 border-b border-border bg-surface/60" />
+				<div className="mx-auto max-w-7xl space-y-8 px-6 py-16">
+					<div className="h-32 max-w-md rounded border border-border bg-surface/50" />
+					<div className="h-64 rounded border border-border bg-surface/40" />
+				</div>
 			</div>
 		</div>
 	);
@@ -35,6 +54,11 @@ export default function LandingPage() {
 	const location = useLocation();
 	const reduceMotion = usePrefersReducedMotion();
 	const lenisRef = useRef<Lenis | null>(null);
+	const deepLinkTargetId = location.hash
+		.replace(/^#/, "")
+		.startsWith("section-")
+		? location.hash.replace(/^#/, "")
+		: null;
 
 	useEffect(() => {
 		if (reduceMotion) return;
@@ -135,11 +159,11 @@ export default function LandingPage() {
 
 	return (
 		<div
-			className={`bg-bg text-ink min-h-dvh-screen selection:bg-accent selection:text-bg ${reduceMotion ? "" : "cursor-none"}`}
+			className={`bg-bg text-ink min-h-dvh-screen ${reduceMotion ? "" : "cursor-none"}`}
 		>
 			<Seo
-				title="MECG — Michigan Economics Consulting Group"
-				description="Selective economics consulting community at the University of Michigan. Apply, connect with alumni, and access member tools."
+				title="MECG — Michigan Engineering Consulting Group"
+				description="Pro-bono consulting open to all majors at the University of Michigan. Apply, connect with alumni, and access member tools."
 				pathname="/"
 			/>
 			<LandingJsonLd />
@@ -157,8 +181,13 @@ export default function LandingPage() {
 				tabIndex={-1}
 				className="outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 			>
-				<Suspense fallback={<LandingMainFallback />}>
-					<LandingMainLazy onNavigate={scrollToSection} />
+				<Suspense
+					fallback={<LandingMainFallback deepLinkTargetId={deepLinkTargetId} />}
+				>
+					<LandingMainLazy
+						onNavigate={scrollToSection}
+						deepLinkTargetId={deepLinkTargetId}
+					/>
 				</Suspense>
 			</main>
 		</div>

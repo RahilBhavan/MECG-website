@@ -8,7 +8,7 @@ function portalMeta(pathname: string): { title: string; description: string } {
 		return {
 			title: "Apply — MECG",
 			description:
-				"Submit or update your Michigan Economics Consulting Group application.",
+				"Submit or update your Michigan Engineering Consulting Group application.",
 		};
 	if (pathname.startsWith("/review"))
 		return {

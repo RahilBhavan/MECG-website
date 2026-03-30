@@ -61,6 +61,9 @@ const WINTER_2026_CASE_STUDIES: readonly {
 
 const COHORT_LABEL = "Winter 2026";
 
+const IMPACT_COMMUNITY_COPY =
+	"MECG places an emphasis on a community of diverse students that share one thing: a passion to learn more about consulting and gain experiences in the field. Our four pillars (Professional Development, Education, Project Experience, and Community) drive our impact on real companies and members' careers.";
+
 export default function ImpactSection() {
 	const sectionRef = useRef<HTMLElement>(null);
 	const scrollerRef = useRef<HTMLDivElement>(null);
@@ -121,19 +124,24 @@ export default function ImpactSection() {
 			className="w-full scroll-mt-20 border-t border-border bg-bg py-24 text-ink md:scroll-mt-14 md:py-28"
 		>
 			<div className="mx-auto max-w-7xl px-4 sm:px-6">
-				<div className="animate-up mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-					<h2
-						id="impact-section-heading"
-						className="type-marketing-kicker text-muted"
-					>
-						<span className="text-accent">[00]</span> IMPACT
-					</h2>
-					<p className="max-w-md text-sm leading-relaxed text-muted">
-						<span className="type-marketing-kicker text-ink/90">
-							{COHORT_LABEL} engagements
-						</span>
-						{" — "}
-						scroll the strip or use the previous and next controls.
+				<div className="animate-up mb-10 flex flex-col gap-6">
+					<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+						<h2
+							id="impact-section-heading"
+							className="type-marketing-kicker marketing-section-accent-rail text-muted"
+						>
+							<span className="text-accent">[00]</span> IMPACT
+						</h2>
+						<p className="type-marketing-body-sm max-w-md text-muted">
+							<span className="type-marketing-kicker text-ink/90">
+								{COHORT_LABEL} engagements
+							</span>
+							{" — "}
+							scroll the strip or use the previous and next controls.
+						</p>
+					</div>
+					<p className="max-w-3xl text-base font-sans font-light leading-relaxed text-muted md:text-lg">
+						{IMPACT_COMMUNITY_COPY}
 					</p>
 				</div>
 			</div>
@@ -149,7 +157,7 @@ export default function ImpactSection() {
 				<div className="mx-auto mb-3 flex max-w-7xl justify-end gap-2 px-4 sm:px-6">
 					<button
 						type="button"
-						className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded border border-border text-technical text-muted transition-colors hover:border-[var(--color-marketing-cta)]/50 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+						className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded border border-border text-technical text-muted transition-colors hover:border-accent/35 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 						aria-controls="impact-case-scroll"
 						onClick={() => scrollStrip(-1)}
 					>
@@ -158,7 +166,7 @@ export default function ImpactSection() {
 					</button>
 					<button
 						type="button"
-						className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded border border-border text-technical text-muted transition-colors hover:border-[var(--color-marketing-cta)]/50 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+						className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded border border-border text-technical text-muted transition-colors hover:border-accent/35 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 						aria-controls="impact-case-scroll"
 						onClick={() => scrollStrip(1)}
 					>
@@ -185,12 +193,12 @@ export default function ImpactSection() {
 							<article
 								key={project.id}
 								aria-label={`${project.name}, ${COHORT_LABEL}`}
-								className="group relative flex w-[min(100%,19rem)] shrink-0 snap-start flex-col border border-border bg-bg-raised/80 backdrop-blur-sm transition-[border-color,box-shadow,transform] duration-300 sm:w-[22rem] [@media(pointer:fine)]:hover:-translate-y-0.5 [@media(pointer:fine)]:hover:border-accent/40 [@media(pointer:fine)]:hover:shadow-[0_20px_50px_-24px_rgba(0,0,0,0.65)]"
+								className="group relative flex w-[min(100%,19rem)] shrink-0 snap-start flex-col border border-border bg-bg-raised/80 backdrop-blur-sm transition-[border-color,box-shadow,transform] duration-300 light:bg-surface light:backdrop-blur-none sm:w-[22rem] focus-within:shadow-card-elevated [@media(pointer:fine)]:hover:-translate-y-0.5 [@media(pointer:fine)]:hover:border-accent/30 [@media(pointer:fine)]:hover:shadow-card-elevated"
 							>
-								<div className="h-1 w-full bg-accent/80" aria-hidden />
+								<div className="h-1 w-full bg-accent/45" aria-hidden />
 								<div className="flex flex-1 flex-col gap-5 p-6">
 									<div className="flex items-start justify-between gap-4">
-										<div className="flex h-14 w-14 shrink-0 items-center justify-center rounded border border-border-strong bg-ink p-2 transition-colors duration-300 group-hover:border-accent/50">
+										<div className="flex h-14 w-14 shrink-0 items-center justify-center rounded border border-border-strong bg-ink p-2 transition-colors duration-300 group-hover:border-accent/35">
 											{project.logo.source === "simple-icon" ? (
 												<ImpactClientLogo
 													kind="simple-icon"
@@ -205,13 +213,13 @@ export default function ImpactSection() {
 										</span>
 									</div>
 									<div>
-										<h4 className="font-display text-2xl tracking-tight text-ink sm:text-3xl">
+										<h4 className="type-marketing-card-title text-ink">
 											{project.name}
 										</h4>
 										<p className="type-marketing-kicker mt-3 text-muted">
 											{COHORT_LABEL}
 										</p>
-										<p className="mt-4 text-sm leading-relaxed text-muted">
+										<p className="type-marketing-body-sm mt-4 text-muted">
 											{project.blurb}
 										</p>
 									</div>
@@ -237,12 +245,12 @@ export default function ImpactSection() {
 						].map((pillar, i) => (
 							<div
 								key={i}
-								className="flex min-w-0 items-start gap-4 py-8 border-b border-border hover:bg-ink/5 transition-colors group cursor-default"
+								className="flex min-w-0 items-start gap-4 py-8 border-b border-border transition-colors group cursor-default hover:bg-ink/5 focus-within:bg-ink/5"
 							>
 								<span className="text-technical text-muted w-24 shrink-0 group-hover:text-ink transition-colors">
 									[{pillar.num}]
 								</span>
-								<h4 className="text-2xl md:text-4xl font-sans font-medium tracking-tight text-ink-secondary">
+								<h4 className="type-marketing-pillar-title text-ink-secondary">
 									{pillar.title}
 								</h4>
 							</div>

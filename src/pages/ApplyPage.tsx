@@ -60,10 +60,6 @@ const SUBMIT_FOCUS_ORDER = [
 	"resumeUrl",
 ] as const;
 
-/** Shared focus ring for portal form controls (keyboard + pointer). */
-const PORTAL_FIELD_FOCUS =
-	"outline-none focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring";
-
 function RequiredMark() {
 	return (
 		<span className="text-danger ml-0.5" aria-hidden>
@@ -732,7 +728,7 @@ export default function ApplyPage() {
 
 			{isEditable ? (
 				<div className="max-sm:pb-[max(7rem,env(safe-area-inset-bottom,0px))] space-y-6">
-					<div className="sticky top-0 z-10 -mx-1 rounded-b-lg border border-t-0 border-border bg-bg/95 px-4 py-4 shadow-[0_12px_32px_-20px_rgba(0,0,0,0.5)] backdrop-blur-md supports-[backdrop-filter]:bg-bg/90 sm:-mx-0 sm:border-t sm:border-border">
+					<div className="sticky top-0 z-10 -mx-1 rounded-b-lg border border-t-0 border-border bg-bg/95 px-4 py-4 shadow-sticky-down backdrop-blur-md supports-[backdrop-filter]:bg-bg/90 sm:-mx-0 sm:border-t sm:border-border">
 						<p className="text-technical text-muted mb-1" id="apply-step-label">
 							Step {activeStep + 1} of {STEPS.length}: {STEPS[activeStep]}
 						</p>
@@ -792,7 +788,7 @@ export default function ApplyPage() {
 												value={batchId}
 												onChange={(e) => setBatchId(e.target.value)}
 												aria-describedby="apply-batch-admin-hint"
-												className={`w-full bg-transparent border border-border px-3 py-2 min-h-11 font-sans ${PORTAL_FIELD_FOCUS}`}
+												className="portal-field-focus min-h-11 w-full border border-border bg-transparent px-3 py-2 font-sans"
 											/>
 										</label>
 										<p
@@ -833,7 +829,7 @@ export default function ApplyPage() {
 											setAnswers((a) => ({ ...a, fullName: e.target.value }));
 											setFieldErrors((f) => ({ ...f, fullName: "" }));
 										}}
-										className={`w-full bg-transparent border border-border px-3 py-2 min-h-11 font-sans ${PORTAL_FIELD_FOCUS}`}
+										className="portal-field-focus min-h-11 w-full border border-border bg-transparent px-3 py-2 font-sans"
 									/>
 									{fieldErrors.fullName ? (
 										<span
@@ -980,7 +976,7 @@ export default function ApplyPage() {
 											setAnswers((a) => ({ ...a, major: e.target.value }));
 											setFieldErrors((f) => ({ ...f, major: "" }));
 										}}
-										className={`w-full bg-transparent border border-border px-3 py-2 min-h-11 font-sans ${PORTAL_FIELD_FOCUS}`}
+										className="portal-field-focus min-h-11 w-full border border-border bg-transparent px-3 py-2 font-sans"
 									/>
 									{fieldErrors.major ? (
 										<span
@@ -1022,7 +1018,7 @@ export default function ApplyPage() {
 											}));
 											setFieldErrors((f) => ({ ...f, academicYear: "" }));
 										}}
-										className={`w-full bg-transparent border border-border px-3 py-2 min-h-11 font-sans ${PORTAL_FIELD_FOCUS}`}
+										className="portal-field-focus min-h-11 w-full border border-border bg-transparent px-3 py-2 font-sans"
 									/>
 									{fieldErrors.academicYear ? (
 										<span
@@ -1059,7 +1055,7 @@ export default function ApplyPage() {
 										setAnswers((a) => ({ ...a, whyMecg: e.target.value }));
 										setFieldErrors((f) => ({ ...f, whyMecg: "" }));
 									}}
-									className={`w-full min-h-44 max-h-[min(70vh,36rem)] overflow-y-auto bg-transparent border border-border px-3 py-2 font-sans ${PORTAL_FIELD_FOCUS}`}
+									className="portal-field-focus max-h-[min(70vh,36rem)] min-h-44 w-full overflow-y-auto border border-border bg-transparent px-3 py-2 font-sans"
 								/>
 								{fieldErrors.whyMecg ? (
 									<span
@@ -1111,7 +1107,7 @@ export default function ApplyPage() {
 											}));
 											setFieldErrors((f) => ({ ...f, resumeUrl: "" }));
 										}}
-										className={`w-full bg-transparent border border-border px-3 py-2 min-h-11 font-sans ${PORTAL_FIELD_FOCUS}`}
+										className="portal-field-focus min-h-11 w-full border border-border bg-transparent px-3 py-2 font-sans"
 									/>
 								</label>
 								{fieldErrors.resumeUrl ? (
@@ -1133,7 +1129,7 @@ export default function ApplyPage() {
 						) : null}
 					</fieldset>
 
-					<div className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-bg/95 px-4 py-3 backdrop-blur-md sm:static sm:z-auto sm:mt-4 sm:rounded-lg sm:border sm:bg-surface/20 sm:px-5 sm:py-4 sm:shadow-[0_-8px_40px_-28px_rgba(0,0,0,0.45)] sm:backdrop-blur-none">
+					<div className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-bg/95 px-4 py-3 backdrop-blur-md sm:static sm:z-auto sm:mt-4 sm:rounded-lg sm:border sm:bg-surface/20 sm:px-5 sm:py-4 sm:shadow-sticky-bar-sm sm:backdrop-blur-none">
 						<div className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
 							<div className="flex flex-wrap gap-3 sm:gap-4">
 								<Button

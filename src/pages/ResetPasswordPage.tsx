@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import { Button } from "@/components/ui/button";
+import {
+	AUTH_TEXT_INPUT_CLASS,
+	AuthFieldError,
+	AuthFormCard,
+	AuthPortalScreen,
+} from "@/src/components/auth-portal.tsx";
 import { Seo } from "@/src/components/seo.tsx";
 import { focusFormControl } from "@/src/lib/focus-form-control";
 import { supabase } from "@/src/lib/supabase";
@@ -68,13 +75,13 @@ export default function ResetPasswordPage() {
 	}
 
 	return (
-		<div className="min-h-dvh-screen page-safe-insets flex flex-col items-center justify-center bg-bg text-ink">
+		<AuthPortalScreen>
 			<Seo
 				title="Reset password — MECG"
 				description="Choose a new password for your MECG account."
 				pathname="/reset-password"
 			/>
-			<div className="w-full max-w-md space-y-6 rounded-lg border border-border-strong bg-surface/30 p-6 shadow-[var(--shadow-marketing-md)] sm:p-8">
+			<AuthFormCard>
 				<h1 className="type-auth-title">Set new password</h1>
 				{!ready ? (
 					<p className="text-technical text-muted">Checking your reset link…</p>
@@ -102,7 +109,7 @@ export default function ResetPasswordPage() {
 										? "reset-password-requirements-hint reset-password-field-error"
 										: "reset-password-requirements-hint"
 								}
-								className="w-full bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
+								className={AUTH_TEXT_INPUT_CLASS}
 							/>
 							<p
 								id="reset-password-requirements-hint"
@@ -111,13 +118,9 @@ export default function ResetPasswordPage() {
 								At least 8 characters.
 							</p>
 							{error && invalidField === "password" ? (
-								<p
-									id="reset-password-field-error"
-									className="text-sm text-danger"
-									role="alert"
-								>
+								<AuthFieldError id="reset-password-field-error">
 									{error}
-								</p>
+								</AuthFieldError>
 							) : null}
 						</label>
 						<label className="block space-y-1" htmlFor="reset-confirm-password">
@@ -140,7 +143,7 @@ export default function ResetPasswordPage() {
 										? "reset-confirm-hint reset-confirm-field-error"
 										: "reset-confirm-hint"
 								}
-								className="w-full bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
+								className={AUTH_TEXT_INPUT_CLASS}
 							/>
 							<p
 								id="reset-confirm-hint"
@@ -149,31 +152,30 @@ export default function ResetPasswordPage() {
 								Must match the field above.
 							</p>
 							{error && invalidField === "confirm" ? (
-								<p
-									id="reset-confirm-field-error"
-									className="text-sm text-danger"
-									role="alert"
-								>
+								<AuthFieldError id="reset-confirm-field-error">
 									{error}
-								</p>
+								</AuthFieldError>
 							) : null}
 						</label>
-						<button
+						<Button
 							type="submit"
 							disabled={pending}
-							className="w-full border border-accent py-3 min-h-11 text-technical text-accent hover:bg-accent hover:text-bg transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2"
+							aria-busy={pending}
+							variant="outline"
+							className="w-full min-h-11 border-accent text-accent hover:bg-accent hover:text-bg"
+							size="lg"
 						>
 							{pending ? "Updating…" : "Update password"}
-						</button>
+						</Button>
 					</form>
 				)}
 				<Link
 					to="/login"
-					className="block text-center text-technical text-muted hover:text-ink"
+					className="block text-center text-technical text-muted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded-sm"
 				>
 					← Back to sign in
 				</Link>
-			</div>
-		</div>
+			</AuthFormCard>
+		</AuthPortalScreen>
 	);
 }

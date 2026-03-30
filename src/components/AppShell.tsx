@@ -4,6 +4,7 @@ import { Link, NavLink, Outlet } from "react-router-dom";
 
 import { getPostLoginPath, hasRole, useAuth } from "@/src/auth/AuthProvider";
 import { PortalSeo } from "@/src/components/portal-seo.tsx";
+import { ThemeToggle } from "@/src/components/theme-toggle.tsx";
 import type { AppRole } from "@/src/types/database";
 
 const STORAGE_HINT = "mecg.portalHint.dismissed.v1";
@@ -86,7 +87,7 @@ export default function AppShell() {
 	return (
 		<div className="min-h-screen bg-bg text-ink cursor-auto">
 			<PortalSeo />
-			<header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b border-border-strong bg-bg-raised/92 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))] shadow-[0_10px_36px_-20px_rgba(0,0,0,0.55)] backdrop-blur-md sm:px-6">
+			<header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b border-border-strong bg-bg-raised/92 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))] shadow-header backdrop-blur-md sm:px-6">
 				<div className="flex items-center gap-3 min-w-0 flex-1">
 					<Link
 						to={home}
@@ -111,6 +112,7 @@ export default function AppShell() {
 					>
 						Site
 					</Link>
+					<ThemeToggle className="ml-1" />
 					<details className="relative ml-2">
 						<summary className="list-none cursor-pointer inline-flex items-center justify-center min-h-11 px-3 rounded border border-border text-technical hover:border-ink [&::-webkit-details-marker]:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
 							Account
@@ -167,7 +169,7 @@ export default function AppShell() {
 				<div className="fixed inset-0 z-[100] lg:hidden">
 					<button
 						type="button"
-						className="absolute inset-0 bg-black/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+						className="absolute inset-0 bg-mecg-overlay focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 						aria-label="Close menu"
 						onClick={() => setMenuOpen(false)}
 					/>
@@ -192,6 +194,10 @@ export default function AppShell() {
 						>
 							Site
 						</Link>
+						<div className="flex items-center gap-2 border-b border-border px-4 py-3">
+							<span className="text-technical text-muted text-xs">Theme</span>
+							<ThemeToggle />
+						</div>
 						<div className="p-4 mt-auto border-t border-border text-technical text-xs text-muted break-all">
 							{user?.email}
 						</div>

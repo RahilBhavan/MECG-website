@@ -5,6 +5,13 @@ import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { getPostLoginPath, useAuth } from "@/src/auth/AuthProvider";
+import {
+	AUTH_TEXT_INPUT_CLASS,
+	AuthFieldError,
+	AuthFormAlert,
+	AuthFormCard,
+	AuthPortalScreen,
+} from "@/src/components/auth-portal.tsx";
 import { Seo } from "@/src/components/seo.tsx";
 import {
 	classifyLoginAuthError,
@@ -46,12 +53,12 @@ export default function LoginPage() {
 
 	if (!configured && !loading) {
 		return (
-			<div className="min-h-dvh-screen page-safe-insets flex items-center justify-center bg-bg text-ink">
-				<p className="text-technical text-muted text-center max-w-md">
+			<AuthPortalScreen>
+				<p className="text-technical text-muted max-w-md text-center">
 					Configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to enable
 					sign-in.
 				</p>
-			</div>
+			</AuthPortalScreen>
 		);
 	}
 
@@ -117,13 +124,13 @@ export default function LoginPage() {
 
 	if (forgotMode) {
 		return (
-			<div className="min-h-dvh-screen page-safe-insets flex flex-col items-center justify-center bg-bg text-ink">
+			<AuthPortalScreen>
 				<Seo
 					title="Reset password — MECG"
 					description="Request a password reset link for your MECG account."
 					pathname="/login"
 				/>
-				<div className="w-full max-w-md space-y-6 rounded-lg border border-border-strong bg-surface/30 p-6 shadow-[var(--shadow-marketing-md)] sm:p-8">
+				<AuthFormCard>
 					<h1 className="type-auth-title">Reset password</h1>
 					<p className="text-technical text-muted">
 						We&apos;ll email you a link to choose a new password. Add{" "}
@@ -152,17 +159,13 @@ export default function LoginPage() {
 									aria-describedby={
 										forgotError ? "forgot-email-error" : undefined
 									}
-									className="w-full rounded-md border border-border bg-transparent px-3 py-2 font-sans outline-none focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
+									className={AUTH_TEXT_INPUT_CLASS}
 								/>
 							</label>
 							{forgotError ? (
-								<p
-									id="forgot-email-error"
-									className="text-sm text-danger"
-									role="alert"
-								>
+								<AuthFieldError id="forgot-email-error">
 									{forgotError}
-								</p>
+								</AuthFieldError>
 							) : null}
 							{errorDetail ? (
 								<details className="text-technical text-muted text-xs">
@@ -177,7 +180,8 @@ export default function LoginPage() {
 							<button
 								type="submit"
 								disabled={pending}
-								className="w-full border border-accent py-3 min-h-11 text-technical text-accent hover:bg-accent hover:text-bg transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2"
+								aria-busy={pending}
+								className="inline-flex min-h-11 w-full items-center justify-center gap-2 border border-accent py-3 text-technical text-accent transition-colors hover:bg-accent hover:text-bg disabled:opacity-50"
 							>
 								{pending ? (
 									<>
@@ -198,23 +202,23 @@ export default function LoginPage() {
 							setForgotError(null);
 							setErrorDetail(null);
 						}}
-						className="text-technical text-muted hover:text-ink w-full text-center"
+						className="text-technical text-muted hover:text-ink w-full text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded-sm"
 					>
 						← Back to sign in
 					</button>
-				</div>
-			</div>
+				</AuthFormCard>
+			</AuthPortalScreen>
 		);
 	}
 
 	return (
-		<div className="min-h-dvh-screen page-safe-insets flex flex-col items-center justify-center bg-bg text-ink">
+		<AuthPortalScreen>
 			<Seo
 				title="Sign in — MECG"
-				description="Sign in to the Michigan Economics Consulting Group portal for applicants, alumni, reviewers, and admins."
+				description="Sign in to the Michigan Engineering Consulting Group portal for applicants, alumni, reviewers, and admins."
 				pathname="/login"
 			/>
-			<div className="w-full max-w-md space-y-6 rounded-lg border border-border-strong bg-surface/30 p-6 shadow-[var(--shadow-marketing-md)] sm:p-8">
+			<AuthFormCard>
 				<h1 className="type-auth-title">{t("auth.signIn")}</h1>
 				<p className="text-technical text-muted">
 					Access is controlled by roles assigned in Supabase (applicant, alumni,
@@ -226,13 +230,9 @@ export default function LoginPage() {
 					noValidate
 				>
 					{loginFormError ? (
-						<p
-							id="login-auth-error"
-							className="text-sm text-danger border border-danger/40 px-3 py-2"
-							role="alert"
-						>
+						<AuthFormAlert id="login-auth-error">
 							{loginFormError}
-						</p>
+						</AuthFormAlert>
 					) : null}
 					<label className="block space-y-1" htmlFor="login-email">
 						<span className="text-technical text-muted">Email</span>
@@ -253,12 +253,12 @@ export default function LoginPage() {
 										? "login-email-error"
 										: undefined
 							}
-							className="w-full rounded-md border border-border bg-transparent px-3 py-2 font-sans outline-none focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
+							className={AUTH_TEXT_INPUT_CLASS}
 						/>
 						{loginEmailError ? (
-							<span id="login-email-error" className="text-xs text-danger">
+							<AuthFieldError id="login-email-error">
 								{loginEmailError}
-							</span>
+							</AuthFieldError>
 						) : null}
 					</label>
 					<div className="space-y-1">
@@ -287,7 +287,7 @@ export default function LoginPage() {
 											? "login-password-error"
 											: undefined
 								}
-								className="min-w-0 flex-1 rounded-md border border-border bg-transparent px-3 py-2 font-sans outline-none focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
+								className={`min-w-0 flex-1 ${AUTH_TEXT_INPUT_CLASS}`}
 							/>
 							<button
 								type="button"
@@ -305,9 +305,9 @@ export default function LoginPage() {
 							</button>
 						</div>
 						{loginPasswordError ? (
-							<span id="login-password-error" className="text-xs text-danger">
+							<AuthFieldError id="login-password-error">
 								{loginPasswordError}
-							</span>
+							</AuthFieldError>
 						) : null}
 					</div>
 					{errorDetail ? (
@@ -320,7 +320,13 @@ export default function LoginPage() {
 							</pre>
 						</details>
 					) : null}
-					<Button type="submit" disabled={pending} className="w-full" size="lg">
+					<Button
+						type="submit"
+						disabled={pending}
+						aria-busy={pending}
+						className="w-full"
+						size="lg"
+					>
 						{pending ? (
 							<>
 								<Loader2 className="h-4 w-4 animate-spin" aria-hidden />
@@ -354,11 +360,11 @@ export default function LoginPage() {
 				</div>
 				<Link
 					to="/"
-					className="block text-center text-technical text-muted hover:text-ink"
+					className="block text-center text-technical text-muted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded-sm"
 				>
 					← Back to site
 				</Link>
-			</div>
-		</div>
+			</AuthFormCard>
+		</AuthPortalScreen>
 	);
 }

@@ -1,7 +1,5 @@
 import { layoutWithLines, prepareWithSegments } from "@chenglou/pretext";
 
-import { brandColors } from "@/src/lib/brand-colors";
-
 /** Matches hero subcopy theme; decorative only (DOM headline stays primary). */
 export const HERO_WEBGL_AMBIENT_COPY = "MULTIFACETED · DRIVEN · INCLUSIVE";
 
@@ -23,9 +21,13 @@ export type HeroPretextCanvasResult = {
 /**
  * Rasterize Pretext line layout to a 2D canvas for use as a Three.js `CanvasTexture`.
  * Call after `document.fonts.ready` so measurements match the marketing Playfair load.
+ *
+ * @param worldPlaneWidth — world units for plane width
+ * @param fillHex — accent ink (theme-aware)
  */
 export function buildHeroAmbientPretextCanvas(
 	worldPlaneWidth: number,
+	fillHex: string,
 ): HeroPretextCanvasResult | null {
 	if (typeof document === "undefined") return null;
 
@@ -57,7 +59,7 @@ export function buildHeroAmbientPretextCanvas(
 	ctx.scale(dpr, dpr);
 	ctx.textBaseline = "top";
 	ctx.font = font;
-	ctx.fillStyle = brandColors.accent;
+	ctx.fillStyle = fillHex;
 
 	let y = CANVAS_PAD_PX;
 	for (const line of lines) {

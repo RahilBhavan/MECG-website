@@ -1,4 +1,5 @@
 import { type FormEvent, useId, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { useRevealUp } from "@/src/hooks/use-landing-scroll-reveals";
 
@@ -72,7 +73,7 @@ export default function ContactSection() {
 	return (
 		<section
 			id="section-contact"
-			className="w-full scroll-mt-20 border-t border-border bg-bg py-32 text-ink md:scroll-mt-14 md:py-40"
+			className="w-full scroll-mt-20 border-t border-border bg-bg-deep py-32 text-ink md:scroll-mt-14 md:py-40"
 			aria-labelledby="contact-section-title"
 		>
 			<div className="mx-auto max-w-7xl px-4 sm:px-6">
@@ -121,7 +122,7 @@ export default function ContactSection() {
 					<div className="min-w-0 lg:col-span-4">
 						<h2
 							id="contact-section-title"
-							className="reveal-up type-marketing-kicker mb-4 text-muted"
+							className="reveal-up type-marketing-kicker marketing-section-accent-rail mb-4 text-muted"
 						>
 							<span className="text-accent">[07]</span> ENGAGEMENT
 						</h2>
@@ -130,14 +131,24 @@ export default function ContactSection() {
 							<br />
 							CONTACT.
 						</h3>
-						<p className="reveal-up text-muted font-sans font-light max-w-sm">
+						<p className="type-marketing-body reveal-up max-w-sm text-muted">
 							Whether you are a prospective client or a student looking to join
 							the firm, we welcome your inquiry.
+						</p>
+						<p className="type-marketing-body-sm reveal-up mt-6 max-w-sm text-muted">
+							Current members and alumni:{" "}
+							<Link
+								to="/login"
+								className="text-ink underline-offset-4 transition-colors hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded-sm"
+							>
+								Sign in
+							</Link>{" "}
+							for the network directory and member resources.
 						</p>
 					</div>
 					<div className="reveal-up min-w-0 lg:col-span-8">
 						{status === "success" ? (
-							<p className="text-muted font-sans font-light">
+							<p className="type-marketing-body text-muted">
 								Use the actions above to open your mail client, or reach us
 								directly at{" "}
 								<a
@@ -167,7 +178,7 @@ export default function ContactSection() {
 										name="name"
 										placeholder="First & Last Name"
 										autoComplete="name"
-										className="w-full bg-transparent border-b border-border py-4 text-xl font-sans font-light text-ink placeholder:text-muted/50 outline-none focus:border-ink focus:border-b-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring transition-all peer"
+										className="type-marketing-body-lg w-full border-b border-border bg-transparent py-4 text-ink placeholder:text-muted/50 outline-none transition-all focus:border-b-2 focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring peer"
 										required
 									/>
 								</div>
@@ -184,7 +195,7 @@ export default function ContactSection() {
 										name="email"
 										placeholder="Email Address"
 										autoComplete="email"
-										className="w-full bg-transparent border-b border-border py-4 text-xl font-sans font-light text-ink placeholder:text-muted/50 outline-none focus:border-ink focus:border-b-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring transition-all peer"
+										className="type-marketing-body-lg w-full border-b border-border bg-transparent py-4 text-ink placeholder:text-muted/50 outline-none transition-all focus:border-b-2 focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring peer"
 										required
 									/>
 								</div>
@@ -200,7 +211,7 @@ export default function ContactSection() {
 										id="contact-subject"
 										name="subject"
 										placeholder="Subject"
-										className="w-full bg-transparent border-b border-border py-4 text-xl font-sans font-light text-ink placeholder:text-muted/50 outline-none focus:border-ink focus:border-b-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring transition-all peer"
+										className="type-marketing-body-lg w-full border-b border-border bg-transparent py-4 text-ink placeholder:text-muted/50 outline-none transition-all focus:border-b-2 focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring peer"
 										required
 									/>
 								</div>
@@ -216,7 +227,7 @@ export default function ContactSection() {
 										name="message"
 										placeholder="Message"
 										rows={4}
-										className="w-full bg-transparent border-b border-border py-4 text-xl font-sans font-light text-ink placeholder:text-muted/50 outline-none focus:border-ink focus:border-b-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring transition-all resize-none peer"
+										className="type-marketing-body-lg w-full resize-none border-b border-border bg-transparent py-4 text-ink placeholder:text-muted/50 outline-none transition-all focus:border-b-2 focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring peer"
 										required
 									/>
 								</div>
@@ -242,7 +253,11 @@ export default function ContactSection() {
 						<h4 className="text-technical text-muted mb-4">
 							MECG // MICHIGAN ENGINEERING CONSULTING GROUP
 						</h4>
-						<div className="text-sm font-sans font-light text-muted">
+						<div className="type-marketing-meta text-muted">
+							College of Engineering
+							<br />
+							University of Michigan
+							<br />
 							1221 Beal Ave
 							<br />
 							Ann Arbor, MI 48109
@@ -256,7 +271,7 @@ export default function ContactSection() {
 							<h5 className="text-technical text-muted mb-2">INQUIRIES</h5>
 							<a
 								href="mailto:mecg-board@umich.edu"
-								className="text-sm font-sans font-light text-ink hover:text-muted transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded-sm"
+								className="type-marketing-meta text-ink transition-colors hover:text-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded-sm"
 							>
 								mecg-board@umich.edu
 							</a>
@@ -267,17 +282,17 @@ export default function ContactSection() {
 								href="https://instagram.com/mecgmichigan"
 								target="_blank"
 								rel="noreferrer"
-								className="text-sm font-sans font-light text-ink hover:text-muted transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded-sm"
+								className="type-marketing-meta text-ink transition-colors hover:text-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded-sm"
 							>
 								Instagram (@mecgmichigan)
 							</a>
 							<a
-								href="https://linkedin.com"
+								href="https://www.linkedin.com/company/michigan-engineering-consulting-group"
 								target="_blank"
 								rel="noreferrer"
-								className="text-sm font-sans font-light text-ink hover:text-muted transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded-sm"
+								className="type-marketing-meta text-ink transition-colors hover:text-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded-sm"
 							>
-								LinkedIn
+								LinkedIn (Michigan Engineering Consulting Group)
 							</a>
 						</div>
 					</div>

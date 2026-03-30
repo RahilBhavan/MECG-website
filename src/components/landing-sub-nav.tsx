@@ -20,7 +20,7 @@ export function LandingSubNav({ onNavigate }: LandingSubNavProps) {
 		<div className="sticky top-3 z-20 scroll-mt-4 px-2 sm:top-4 sm:px-4">
 			<nav
 				aria-label="Page sections"
-				className="mx-auto max-w-7xl rounded-lg border border-border-strong bg-bg/92 py-2 shadow-[0_12px_40px_-24px_rgba(0,0,0,0.75)] backdrop-blur-md supports-[backdrop-filter]:bg-bg/85"
+				className="mx-auto max-w-7xl rounded-lg border border-border-strong border-t-2 border-t-accent/35 bg-bg/92 py-2 shadow-nav-dock backdrop-blur-md supports-[backdrop-filter]:bg-bg/85 light:border-border-strong light:bg-surface/90"
 			>
 				<ul className="flex max-w-7xl snap-x snap-mandatory flex-nowrap items-center justify-start gap-0.5 overflow-x-auto overscroll-x-contain px-2 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:flex-wrap sm:justify-center sm:gap-1 sm:overflow-visible sm:px-4 md:justify-start [&::-webkit-scrollbar]:hidden">
 					{NAV_ITEMS.map(({ id, label }) => (

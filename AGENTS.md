@@ -19,6 +19,7 @@
 - Dense admin or data-heavy portal screens (e.g. Role administration) use `.type-portal-title-sans` in `src/index.css` for Inter at the same scale as `.type-portal-title` instead of Playfair.
 - Applicants upload a required headshot to the private Storage bucket `application-headshots`; persist `headshotPath` in `applications.answers` and use signed URLs for preview and reviewer cards (`src/lib/application-headshot-storage.ts`).
 - shadcn-style shared primitives live under repo-root `components/ui/` and `lib/utils.ts` with `@/*` mapped to the project root (alongside `src/` app code), matching typical shadcn CLI import paths.
+- Alumni peer directory data is served through the masked `list_directory_profiles` RPC; alumni RLS does not allow `SELECT` on other users’ full `profiles` rows (own row or admin only). The review deck uses screening vs final `review_phase`, shortlist verdicts, rubric `scores` jsonb, `applications.cohort` / `tags` / `assigned_reviewer_id`, blind-mode rows in `review_blind_pass`, and admin audit plus batch tagging on `AdminReviewsPage`; apply submit copies the applicant’s `profiles.cohort` onto `applications`.
 
 ## Vibecoding playbook
 

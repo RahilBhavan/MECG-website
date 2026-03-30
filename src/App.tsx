@@ -12,8 +12,10 @@ import { AuthProvider } from "@/src/auth/AuthProvider";
 import AppShell from "@/src/components/AppShell";
 import { AnalyticsRouteListener } from "@/src/components/analytics-route-listener.tsx";
 import { AppErrorFallback } from "@/src/components/app-error-fallback.tsx";
+import { MecgThemeProvider } from "@/src/components/mecg-theme-provider.tsx";
 import { ProtectedRoute } from "@/src/components/ProtectedRoute";
 import PortalRouteSkeleton from "@/src/components/skeletons/PortalRouteSkeleton";
+import { ThemeColorMeta } from "@/src/components/theme-color-meta.tsx";
 import { ToastProvider } from "@/src/components/toast/ToastProvider";
 import LandingPage from "@/src/pages/LandingPage";
 import LoginPage from "@/src/pages/LoginPage";
@@ -38,97 +40,103 @@ const BalloonsDemoPage = lazy(() => import("@/src/pages/BalloonsDemoPage"));
 export default function App() {
 	return (
 		<HelmetProvider>
-			<Sentry.ErrorBoundary
-				fallback={({ error, resetError }) => (
-					<AppErrorFallback error={error} resetError={resetError} />
-				)}
-			>
-				<AuthProvider>
-					<ToastProvider>
-						<BrowserRouter>
-							<AnalyticsRouteListener />
-							<Suspense fallback={<PortalRouteSkeleton />}>
-								<Routes>
-									<Route path="/" element={<LandingPage />} />
-									<Route path="/login" element={<LoginPage />} />
-									<Route path="/signup" element={<SignupPage />} />
-									<Route
-										path="/reset-password"
-										element={<ResetPasswordPage />}
-									/>
-									<Route path="/balloons-demo" element={<BalloonsDemoPage />} />
-									<Route
-										path="/pending"
-										element={
-											<ProtectedRoute>
-												<PendingPage />
-											</ProtectedRoute>
-										}
-									/>
-
-									<Route
-										element={
-											<ProtectedRoute>
-												<AppShell />
-											</ProtectedRoute>
-										}
-									>
-										<Route path="/apply" element={<ApplyPage />} />
-									</Route>
-
-									<Route
-										element={
-											<ProtectedRoute roles={["reviewer", "admin"]}>
-												<AppShell />
-											</ProtectedRoute>
-										}
-									>
-										<Route path="/review" element={<ReviewPage />} />
-									</Route>
-
-									<Route
-										element={
-											<ProtectedRoute roles={["alumni", "admin"]}>
-												<AppShell />
-											</ProtectedRoute>
-										}
-									>
-										<Route path="/network" element={<NetworkPage />} />
-									</Route>
-
-									<Route
-										element={
-											<ProtectedRoute roles={["admin"]}>
-												<AppShell />
-											</ProtectedRoute>
-										}
-									>
-										<Route path="/admin" element={<AdminRolesPage />} />
+			<MecgThemeProvider>
+				<ThemeColorMeta />
+				<Sentry.ErrorBoundary
+					fallback={({ error, resetError }) => (
+						<AppErrorFallback error={error} resetError={resetError} />
+					)}
+				>
+					<AuthProvider>
+						<ToastProvider>
+							<BrowserRouter>
+								<AnalyticsRouteListener />
+								<Suspense fallback={<PortalRouteSkeleton />}>
+									<Routes>
+										<Route path="/" element={<LandingPage />} />
+										<Route path="/login" element={<LoginPage />} />
+										<Route path="/signup" element={<SignupPage />} />
 										<Route
-											path="/admin/applications"
-											element={<AdminApplicationsPage />}
+											path="/reset-password"
+											element={<ResetPasswordPage />}
 										/>
 										<Route
-											path="/admin/reviews"
-											element={<AdminReviewsPage />}
+											path="/balloons-demo"
+											element={<BalloonsDemoPage />}
 										/>
 										<Route
-											path="/admin/directory"
-											element={<AdminDirectoryPage />}
+											path="/pending"
+											element={
+												<ProtectedRoute>
+													<PendingPage />
+												</ProtectedRoute>
+											}
 										/>
-										<Route
-											path="/admin/network-events"
-											element={<AdminNetworkEventsPage />}
-										/>
-									</Route>
 
-									<Route path="*" element={<Navigate to="/" replace />} />
-								</Routes>
-							</Suspense>
-						</BrowserRouter>
-					</ToastProvider>
-				</AuthProvider>
-			</Sentry.ErrorBoundary>
+										<Route
+											element={
+												<ProtectedRoute>
+													<AppShell />
+												</ProtectedRoute>
+											}
+										>
+											<Route path="/apply" element={<ApplyPage />} />
+										</Route>
+
+										<Route
+											element={
+												<ProtectedRoute roles={["reviewer", "admin"]}>
+													<AppShell />
+												</ProtectedRoute>
+											}
+										>
+											<Route path="/review" element={<ReviewPage />} />
+										</Route>
+
+										<Route
+											element={
+												<ProtectedRoute roles={["alumni", "admin"]}>
+													<AppShell />
+												</ProtectedRoute>
+											}
+										>
+											<Route path="/network" element={<NetworkPage />} />
+										</Route>
+
+										<Route
+											element={
+												<ProtectedRoute roles={["admin"]}>
+													<AppShell />
+												</ProtectedRoute>
+											}
+										>
+											<Route path="/admin" element={<AdminRolesPage />} />
+											<Route
+												path="/admin/applications"
+												element={<AdminApplicationsPage />}
+											/>
+											<Route
+												path="/admin/reviews"
+												element={<AdminReviewsPage />}
+											/>
+											<Route
+												path="/admin/directory"
+												element={<AdminDirectoryPage />}
+											/>
+											<Route
+												path="/admin/network-events"
+												element={<AdminNetworkEventsPage />}
+											/>
+										</Route>
+
+										<Route path="*" element={<Navigate to="/" replace />} />
+									</Routes>
+								</Suspense>
+							</BrowserRouter>
+						</ToastProvider>
+					</AuthProvider>
+				</Sentry.ErrorBoundary>
+			</MecgThemeProvider>
 		</HelmetProvider>
 	);
 }

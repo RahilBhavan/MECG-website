@@ -4,6 +4,13 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/src/auth/AuthProvider";
+import {
+	AUTH_TEXT_INPUT_CLASS,
+	AuthFieldError,
+	AuthFormAlert,
+	AuthFormCard,
+	AuthPortalScreen,
+} from "@/src/components/auth-portal.tsx";
 import { Seo } from "@/src/components/seo.tsx";
 import { trackFunnelStep } from "@/src/lib/analytics.ts";
 import { classifySignUpAuthError } from "@/src/lib/auth-errors";
@@ -31,12 +38,12 @@ export default function SignupPage() {
 
 	if (!configured && !loading) {
 		return (
-			<div className="min-h-dvh-screen page-safe-insets flex items-center justify-center bg-bg text-ink">
-				<p className="text-technical text-muted text-center max-w-md">
+			<AuthPortalScreen>
+				<p className="text-technical text-muted max-w-md text-center">
 					Configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to enable
 					sign-up.
 				</p>
-			</div>
+			</AuthPortalScreen>
 		);
 	}
 
@@ -84,7 +91,7 @@ export default function SignupPage() {
 
 	if (successPanel) {
 		return (
-			<div className="min-h-dvh-screen page-safe-insets flex flex-col items-center justify-center bg-bg text-ink">
+			<AuthPortalScreen>
 				<Seo
 					title="Check your email — MECG"
 					description="Confirm your MECG account from the link we emailed you."
@@ -110,23 +117,23 @@ export default function SignupPage() {
 					</Button>
 					<Link
 						to="/"
-						className="block text-center text-technical text-muted hover:text-ink"
+						className="block text-center text-technical text-muted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded-sm"
 					>
 						← Back to site
 					</Link>
 				</div>
-			</div>
+			</AuthPortalScreen>
 		);
 	}
 
 	return (
-		<div className="min-h-dvh-screen page-safe-insets flex flex-col items-center justify-center bg-bg text-ink">
+		<AuthPortalScreen>
 			<Seo
 				title="Create account — MECG"
 				description="Create a MECG account to apply. Default role is applicant; other roles are assigned by an admin."
 				pathname="/signup"
 			/>
-			<div className="w-full max-w-md space-y-6 rounded-lg border border-border-strong bg-surface/30 p-6 shadow-[var(--shadow-marketing-md)] sm:p-8">
+			<AuthFormCard>
 				<h1 className="type-auth-title">Create account</h1>
 				<p className="text-technical text-muted">
 					New accounts receive the applicant role by default. Alumni, reviewer,
@@ -139,13 +146,9 @@ export default function SignupPage() {
 					noValidate
 				>
 					{signUpFormError ? (
-						<p
-							id="signup-auth-error"
-							className="text-sm text-danger border border-danger/40 px-3 py-2"
-							role="alert"
-						>
+						<AuthFormAlert id="signup-auth-error">
 							{signUpFormError}
-						</p>
+						</AuthFormAlert>
 					) : null}
 					<label className="block space-y-1" htmlFor="signup-display-name">
 						<span className="text-technical text-muted">Display name</span>
@@ -165,15 +168,12 @@ export default function SignupPage() {
 										? "signup-display-name-error"
 										: undefined
 							}
-							className="w-full rounded-md border border-border bg-transparent px-3 py-2 font-sans outline-none focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
+							className={AUTH_TEXT_INPUT_CLASS}
 						/>
 						{displayNameError ? (
-							<span
-								id="signup-display-name-error"
-								className="text-xs text-danger"
-							>
+							<AuthFieldError id="signup-display-name-error">
 								{displayNameError}
-							</span>
+							</AuthFieldError>
 						) : null}
 					</label>
 					<label className="block space-y-1" htmlFor="signup-email">
@@ -195,12 +195,12 @@ export default function SignupPage() {
 										? "signup-email-error"
 										: undefined
 							}
-							className="w-full rounded-md border border-border bg-transparent px-3 py-2 font-sans outline-none focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
+							className={AUTH_TEXT_INPUT_CLASS}
 						/>
 						{signUpEmailError ? (
-							<span id="signup-email-error" className="text-xs text-danger">
+							<AuthFieldError id="signup-email-error">
 								{signUpEmailError}
-							</span>
+							</AuthFieldError>
 						) : null}
 					</label>
 					<div className="space-y-1">
@@ -230,7 +230,7 @@ export default function SignupPage() {
 											? "signup-password-error"
 											: "signup-password-hint"
 								}
-								className="min-w-0 flex-1 rounded-md border border-border bg-transparent px-3 py-2 font-sans outline-none focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
+								className={`min-w-0 flex-1 ${AUTH_TEXT_INPUT_CLASS}`}
 							/>
 							<button
 								type="button"
@@ -248,9 +248,9 @@ export default function SignupPage() {
 							</button>
 						</div>
 						{signUpPasswordError ? (
-							<span id="signup-password-error" className="text-xs text-danger">
+							<AuthFieldError id="signup-password-error">
 								{signUpPasswordError}
-							</span>
+							</AuthFieldError>
 						) : (
 							<p
 								id="signup-password-hint"
@@ -270,7 +270,13 @@ export default function SignupPage() {
 							</pre>
 						</details>
 					) : null}
-					<Button type="submit" disabled={pending} className="w-full" size="lg">
+					<Button
+						type="submit"
+						disabled={pending}
+						aria-busy={pending}
+						className="w-full"
+						size="lg"
+					>
 						{pending ? (
 							<>
 								<Loader2 className="h-4 w-4 animate-spin" aria-hidden />
@@ -289,11 +295,11 @@ export default function SignupPage() {
 				</p>
 				<Link
 					to="/"
-					className="block text-center text-technical text-muted hover:text-ink"
+					className="block text-center text-technical text-muted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded-sm"
 				>
 					← Back to site
 				</Link>
-			</div>
-		</div>
+			</AuthFormCard>
+		</AuthPortalScreen>
 	);
 }

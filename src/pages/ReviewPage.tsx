@@ -8,6 +8,7 @@ import {
 	HelpCircle,
 	LayoutGrid,
 	List,
+	Undo2,
 	X,
 } from "lucide-react";
 import {
@@ -932,15 +933,20 @@ export default function ReviewPage() {
 								type="button"
 								disabled={!undoStack.length}
 								onClick={() => void undoLast()}
-								className="border border-border px-3 py-2 min-h-11 text-technical text-sm hover:border-ink disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+								aria-label="Undo last verdict"
+								className="inline-flex min-h-11 items-center justify-center gap-2 border border-border px-3 py-2 text-technical text-sm hover:border-ink disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 							>
-								Undo
+								<Undo2 className="h-4 w-4 shrink-0 sm:hidden" aria-hidden />
+								<span>Undo</span>
+								<span className="hidden text-[10px] font-normal normal-case text-muted sm:inline">
+									(u)
+								</span>
 							</button>
 						</div>
 					</div>
 					<button
 						type="button"
-						className="flex items-center gap-1.5 text-technical text-xs text-muted hover:text-ink min-h-10 w-fit focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded"
+						className="flex min-h-11 w-fit items-center gap-1.5 rounded text-technical text-xs text-muted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 						aria-expanded={filtersExpanded}
 						onClick={() => setFiltersExpanded((e) => !e)}
 					>
@@ -1043,7 +1049,7 @@ export default function ReviewPage() {
 					<button
 						type="button"
 						onClick={dismissCompactHint}
-						className="border border-border px-2 py-1.5 min-h-9 text-technical text-xs hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+						className="min-h-11 border border-border px-2 py-1.5 text-technical text-xs hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 					>
 						Dismiss
 					</button>
@@ -1308,7 +1314,7 @@ export default function ReviewPage() {
 
 				<div
 					className={`space-y-4 border border-border p-4 max-h-[55vh] overflow-y-auto lg:max-h-none
-            fixed bottom-0 left-0 right-0 z-[120] bg-bg border-t shadow-[0_-12px_40px_rgba(0,0,0,0.45)]
+            fixed bottom-0 left-0 right-0 z-[120] bg-bg border-t shadow-sticky-up
             lg:static lg:z-auto lg:border lg:shadow-none lg:rounded-none
             ${notesOpen ? "block" : "hidden lg:block"}`}
 				>
