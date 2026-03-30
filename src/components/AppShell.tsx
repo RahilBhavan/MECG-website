@@ -40,14 +40,14 @@ function portalHintText(roles: AppRole[]): string | null {
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
 	`inline-flex items-center justify-center min-h-11 px-3 rounded text-technical transition-colors border-b-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
 		isActive
-			? "border-accent bg-ink/10 text-ink"
+			? "border-accent bg-ink/10 text-accent font-medium"
 			: "border-transparent text-ink/70 hover:text-ink hover:border-border-strong/40"
 	}`;
 
 const mobileLinkClass = ({ isActive }: { isActive: boolean }) =>
 	`flex items-center min-h-12 px-4 text-technical border-b border-border border-l-4 ${
 		isActive
-			? "border-l-accent bg-ink/10 text-ink"
+			? "border-l-accent bg-ink/10 text-accent font-medium"
 			: "border-l-transparent text-ink/70"
 	}`;
 
@@ -90,7 +90,10 @@ export default function AppShell() {
 					</Link>
 				</div>
 
-				<nav className="hidden lg:flex flex-wrap items-center gap-1 justify-end">
+				<nav
+					className="hidden lg:flex flex-wrap items-center gap-1 justify-end"
+					aria-label="Portal"
+				>
 					{destinations.map(({ to, label }) => (
 						<NavLink key={to} to={to} className={navLinkClass}>
 							{label}

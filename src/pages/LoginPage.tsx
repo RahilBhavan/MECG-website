@@ -3,7 +3,11 @@ import { useRef, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import { getPostLoginPath, useAuth } from "@/src/auth/AuthProvider";
-import { mapAuthErrorMessage } from "@/src/lib/auth-errors";
+import {
+	classifyLoginAuthError,
+	mapAuthErrorMessage,
+} from "@/src/lib/auth-errors";
+import { focusFormControl } from "@/src/lib/focus-form-control";
 import { prefetchPortalRoute } from "@/src/lib/prefetch-portal";
 
 export default function LoginPage() {
@@ -22,7 +26,12 @@ export default function LoginPage() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
-	const [errorFriendly, setErrorFriendly] = useState<string | null>(null);
+	const [loginEmailError, setLoginEmailError] = useState<string | null>(null);
+	const [loginPasswordError, setLoginPasswordError] = useState<string | null>(
+		null,
+	);
+	const [loginFormError, setLoginFormError] = useState<string | null>(null);
+	const [forgotError, setForgotError] = useState<string | null>(null);
 	const [errorDetail, setErrorDetail] = useState<string | null>(null);
 	const [pending, setPending] = useState(false);
 	const [forgotMode, setForgotMode] = useState(false);
@@ -50,7 +59,9 @@ export default function LoginPage() {
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
 		if (pending) return;
-		setErrorFriendly(null);
+		setLoginEmailError(null);
+		setLoginPasswordError(null);
+		setLoginFormError(null);
 		setErrorDetail(null);
 		setPending(true);
 		const { error: err, roles: nextRoles } = await signInWithPassword(
@@ -59,12 +70,15 @@ export default function LoginPage() {
 		);
 		setPending(false);
 		if (err) {
-			const { friendly, detail } = mapAuthErrorMessage(err.message);
-			setErrorFriendly(friendly);
+			const { friendly, detail, target } = classifyLoginAuthError(err.message);
 			setErrorDetail(detail);
+			if (target === "email") setLoginEmailError(friendly);
+			else if (target === "password") setLoginPasswordError(friendly);
+			else setLoginFormError(friendly);
 			window.requestAnimationFrame(() => {
-				if (!email.trim()) emailRef.current?.focus();
-				else passwordRef.current?.focus();
+				if (target === "email") focusFormControl(emailRef.current);
+				else if (target === "password") focusFormControl(passwordRef.current);
+				else focusFormControl(emailRef.current);
 			});
 			return;
 		}
@@ -76,7 +90,7 @@ export default function LoginPage() {
 	async function handleForgot(e: React.FormEvent) {
 		e.preventDefault();
 		if (pending) return;
-		setErrorFriendly(null);
+		setForgotError(null);
 		setErrorDetail(null);
 		setPending(true);
 		const redirectTo = `${window.location.origin}/reset-password`;
@@ -87,9 +101,11 @@ export default function LoginPage() {
 		setPending(false);
 		if (err) {
 			const { friendly, detail } = mapAuthErrorMessage(err.message);
-			setErrorFriendly(friendly);
+			setForgotError(friendly);
 			setErrorDetail(detail);
-			window.requestAnimationFrame(() => forgotEmailRef.current?.focus());
+			window.requestAnimationFrame(() =>
+				focusFormControl(forgotEmailRef.current),
+			);
 			return;
 		}
 		setForgotSent(true);
@@ -123,20 +139,20 @@ export default function LoginPage() {
 									value={email}
 									onChange={(e) => setEmail(e.target.value)}
 									disabled={pending}
-									aria-invalid={!!errorFriendly}
+									aria-invalid={!!forgotError}
 									aria-describedby={
-										errorFriendly ? "forgot-form-error" : undefined
+										forgotError ? "forgot-email-error" : undefined
 									}
-									className="w-full bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none disabled:opacity-50"
+									className="w-full bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
 								/>
 							</label>
-							{errorFriendly ? (
+							{forgotError ? (
 								<p
-									id="forgot-form-error"
+									id="forgot-email-error"
 									className="text-sm text-danger"
 									role="alert"
 								>
-									{errorFriendly}
+									{forgotError}
 								</p>
 							) : null}
 							{errorDetail ? (
@@ -170,6 +186,8 @@ export default function LoginPage() {
 						onClick={() => {
 							setForgotMode(false);
 							setForgotSent(false);
+							setForgotError(null);
+							setErrorDetail(null);
 						}}
 						className="text-technical text-muted hover:text-ink w-full text-center"
 					>
@@ -193,6 +211,15 @@ export default function LoginPage() {
 					className="space-y-4"
 					noValidate
 				>
+					{loginFormError ? (
+						<p
+							id="login-auth-error"
+							className="text-sm text-danger border border-danger/40 px-3 py-2"
+							role="alert"
+						>
+							{loginFormError}
+						</p>
+					) : null}
 					<label className="block space-y-1" htmlFor="login-email">
 						<span className="text-technical text-muted">Email</span>
 						<input
@@ -204,10 +231,21 @@ export default function LoginPage() {
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
 							disabled={pending}
-							aria-invalid={!!errorFriendly}
-							aria-describedby={errorFriendly ? "login-form-error" : undefined}
-							className="w-full bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none disabled:opacity-50"
+							aria-invalid={!!(loginEmailError || loginFormError)}
+							aria-describedby={
+								loginFormError
+									? "login-auth-error"
+									: loginEmailError
+										? "login-email-error"
+										: undefined
+							}
+							className="w-full bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
 						/>
+						{loginEmailError ? (
+							<span id="login-email-error" className="text-xs text-danger">
+								{loginEmailError}
+							</span>
+						) : null}
 					</label>
 					<div className="space-y-1">
 						<span
@@ -227,11 +265,15 @@ export default function LoginPage() {
 								onChange={(e) => setPassword(e.target.value)}
 								disabled={pending}
 								aria-labelledby="login-password-label"
-								aria-invalid={!!errorFriendly}
+								aria-invalid={!!(loginPasswordError || loginFormError)}
 								aria-describedby={
-									errorFriendly ? "login-form-error" : undefined
+									loginFormError
+										? "login-auth-error"
+										: loginPasswordError
+											? "login-password-error"
+											: undefined
 								}
-								className="flex-1 min-w-0 bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none disabled:opacity-50"
+								className="flex-1 min-w-0 bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
 							/>
 							<button
 								type="button"
@@ -248,16 +290,12 @@ export default function LoginPage() {
 								)}
 							</button>
 						</div>
+						{loginPasswordError ? (
+							<span id="login-password-error" className="text-xs text-danger">
+								{loginPasswordError}
+							</span>
+						) : null}
 					</div>
-					{errorFriendly ? (
-						<p
-							id="login-form-error"
-							className="text-sm text-danger"
-							role="alert"
-						>
-							{errorFriendly}
-						</p>
-					) : null}
 					{errorDetail ? (
 						<details className="text-technical text-muted text-xs">
 							<summary className="cursor-pointer hover:text-ink">
@@ -286,7 +324,13 @@ export default function LoginPage() {
 				<div className="flex flex-col gap-2 text-center text-technical text-sm">
 					<button
 						type="button"
-						onClick={() => setForgotMode(true)}
+						onClick={() => {
+							setForgotMode(true);
+							setLoginEmailError(null);
+							setLoginPasswordError(null);
+							setLoginFormError(null);
+							setErrorDetail(null);
+						}}
 						className="text-muted hover:text-ink"
 					>
 						Forgot password?

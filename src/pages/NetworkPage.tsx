@@ -140,7 +140,7 @@ export default function NetworkPage() {
 							onChange={(e) =>
 								setMine({ ...mine, display_name: e.target.value })
 							}
-							className="w-full bg-transparent border border-border px-3 py-2 min-h-11 font-sans focus:border-ink outline-none"
+							className="w-full bg-transparent border border-border px-3 py-2 min-h-11 font-sans focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 						/>
 					</label>
 					<label className="block space-y-1">
@@ -149,7 +149,7 @@ export default function NetworkPage() {
 							type="text"
 							value={mine.cohort ?? ""}
 							onChange={(e) => setMine({ ...mine, cohort: e.target.value })}
-							className="w-full bg-transparent border border-border px-3 py-2 min-h-11 font-sans focus:border-ink outline-none"
+							className="w-full bg-transparent border border-border px-3 py-2 min-h-11 font-sans focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 						/>
 					</label>
 					<label className="block space-y-1">
@@ -158,7 +158,7 @@ export default function NetworkPage() {
 							type="text"
 							value={mine.industry ?? ""}
 							onChange={(e) => setMine({ ...mine, industry: e.target.value })}
-							className="w-full bg-transparent border border-border px-3 py-2 min-h-11 font-sans focus:border-ink outline-none"
+							className="w-full bg-transparent border border-border px-3 py-2 min-h-11 font-sans focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 						/>
 					</label>
 					<label className="block space-y-1">
@@ -171,7 +171,7 @@ export default function NetworkPage() {
 							onChange={(e) =>
 								setMine({ ...mine, linkedin_url: e.target.value })
 							}
-							className="w-full bg-transparent border border-border px-3 py-2 min-h-11 font-sans focus:border-ink outline-none"
+							className="w-full bg-transparent border border-border px-3 py-2 min-h-11 font-sans focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 						/>
 					</label>
 					<label className="flex items-center gap-3 text-technical text-muted min-h-11">

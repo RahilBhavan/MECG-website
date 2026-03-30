@@ -7,11 +7,13 @@ import {
 	useLayoutEffect,
 	useMemo,
 	useRef,
+	useState,
 } from "react";
 import * as THREE from "three";
 
 import { brandColors } from "@/src/lib/brand-colors";
 import { buildHeroGraph, createSeededRandom } from "@/src/lib/hero-graph";
+import { buildHeroAmbientPretextCanvas } from "@/src/lib/hero-webgl-pretext-texture";
 
 const NODE_COUNT = 60;
 const GRAPH_SEED = 0x4d454367;
@@ -108,6 +110,87 @@ type DataNetworkProps = {
 	scrollProgressRef: MutableRefObject<number>;
 };
 
+type AmbientTextPayload = {
+	material: THREE.MeshBasicMaterial;
+	planeWidth: number;
+	planeHeight: number;
+};
+
+/**
+ * Pretext `layoutWithLines` → canvas → `CanvasTexture` as low-contrast atmosphere
+ * (DOM hero copy remains the accessible source of truth).
+ */
+function HeroAmbientPretextTypography({ scrollProgressRef }: DataNetworkProps) {
+	const [payload, setPayload] = useState<AmbientTextPayload | null>(null);
+	const payloadRef = useRef<AmbientTextPayload | null>(null);
+	payloadRef.current = payload;
+	const textureGenRef = useRef(0);
+
+	useEffect(() => {
+		const gen = ++textureGenRef.current;
+		let cancelled = false;
+
+		void document.fonts.ready.then(() => {
+			if (cancelled || textureGenRef.current !== gen) return;
+			const built = buildHeroAmbientPretextCanvas(3.45);
+			if (!built) return;
+
+			const texture = new THREE.CanvasTexture(built.canvas);
+			texture.colorSpace = THREE.SRGBColorSpace;
+			texture.needsUpdate = true;
+			texture.minFilter = THREE.LinearFilter;
+			texture.magFilter = THREE.LinearFilter;
+
+			const mat = new THREE.MeshBasicMaterial({
+				map: texture,
+				transparent: true,
+				opacity: 0.1,
+				depthWrite: false,
+			});
+			if (cancelled || textureGenRef.current !== gen) {
+				mat.dispose();
+				return;
+			}
+			setPayload({
+				material: mat,
+				planeWidth: built.planeWidth,
+				planeHeight: built.planeHeight,
+			});
+		});
+
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	useEffect(() => {
+		if (!payload) return;
+		const { material } = payload;
+		return () => {
+			material.dispose();
+		};
+	}, [payload]);
+
+	useFrame(() => {
+		const mat = payloadRef.current?.material;
+		if (!mat) return;
+		const p = scrollProgressRef.current;
+		mat.opacity = 0.1 * (1 - p * 0.92);
+	});
+
+	if (!payload) return null;
+
+	return (
+		<mesh
+			position={[0, -0.48, -2.02]}
+			rotation={[0.11, 0, 0]}
+			material={payload.material}
+		>
+			<planeGeometry args={[payload.planeWidth, payload.planeHeight]} />
+		</mesh>
+	);
+}
+
 function DataNetwork({ scrollProgressRef }: DataNetworkProps) {
 	const groupRef = useRef<THREE.Group>(null);
 	const pointerSmooth = useRef({ x: 0, y: 0 });
@@ -159,6 +242,7 @@ function DataNetwork({ scrollProgressRef }: DataNetworkProps) {
 						opacity={0.26}
 					/>
 				</lineSegments>
+				<HeroAmbientPretextTypography scrollProgressRef={scrollProgressRef} />
 				<CentralCore />
 			</group>
 		</Float>

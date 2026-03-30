@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { hasRole, useAuth } from "@/src/auth/AuthProvider";
+import { ApplyPageSkeleton } from "@/src/components/skeletons/ApplyPageSkeleton";
 import { useToast } from "@/src/components/toast/ToastProvider";
+import { usePretextTextareaRows } from "@/src/hooks/use-pretext-textarea-rows";
 import {
 	APPLICATION_HEADSHOT_ACCEPT,
 	APPLICATION_HEADSHOT_MAX_BYTES,
@@ -157,6 +159,13 @@ export default function ApplyPage() {
 	const [remoteHeadshotPreviewUrl, setRemoteHeadshotPreviewUrl] = useState<
 		string | null
 	>(null);
+
+	const whyMecgRows = usePretextTextareaRows({
+		textareaRef: whyMecgRef,
+		value: answers.whyMecg,
+		minRows: 8,
+		maxRows: 24,
+	});
 
 	const fieldRefs = useMemo(
 		() =>
@@ -491,24 +500,7 @@ export default function ApplyPage() {
 	}
 
 	if (loading) {
-		return (
-			<div className="space-y-6">
-				<div className="space-y-2">
-					<div className="h-10 w-56 animate-pulse rounded bg-ink/10" />
-					<div className="h-4 w-40 animate-pulse rounded bg-ink/10" />
-				</div>
-				<div className="h-12 animate-pulse rounded border border-border bg-ink/5" />
-				<div className="min-h-[280px] animate-pulse rounded border border-border bg-ink/5 p-6">
-					<div className="mb-4 h-4 max-w-md rounded bg-ink/10" />
-					<div className="mb-4 h-11 w-full max-w-lg rounded bg-ink/10" />
-					<div className="h-11 w-full max-w-lg rounded bg-ink/10" />
-				</div>
-				<div className="flex gap-4">
-					<div className="h-11 w-32 animate-pulse rounded border border-border bg-ink/5" />
-					<div className="h-11 w-44 animate-pulse rounded border border-border bg-ink/5" />
-				</div>
-			</div>
-		);
+		return <ApplyPageSkeleton />;
 	}
 
 	return (
@@ -874,21 +866,21 @@ export default function ApplyPage() {
 								<textarea
 									id="application-why-mecg"
 									ref={whyMecgRef}
-									rows={8}
+									rows={whyMecgRows}
 									aria-required
 									value={answers.whyMecg}
 									aria-invalid={!!fieldErrors.whyMecg}
 									aria-describedby={
 										fieldErrors.whyMecg
-											? "application-why-mecg-error"
-											: undefined
+											? "application-why-mecg-error application-why-mecg-hint"
+											: "application-why-mecg-hint"
 									}
 									onBlur={() => blurValidateField("whyMecg", answers.whyMecg)}
 									onChange={(e) => {
 										setAnswers((a) => ({ ...a, whyMecg: e.target.value }));
 										setFieldErrors((f) => ({ ...f, whyMecg: "" }));
 									}}
-									className={`w-full min-h-44 bg-transparent border border-border px-3 py-2 font-sans ${PORTAL_FIELD_FOCUS}`}
+									className={`w-full min-h-44 max-h-[min(70vh,36rem)] overflow-y-auto bg-transparent border border-border px-3 py-2 font-sans ${PORTAL_FIELD_FOCUS}`}
 								/>
 								{fieldErrors.whyMecg ? (
 									<span
@@ -898,6 +890,13 @@ export default function ApplyPage() {
 										{fieldErrors.whyMecg}
 									</span>
 								) : null}
+								<p
+									id="application-why-mecg-hint"
+									className="text-technical text-xs text-muted leading-relaxed"
+								>
+									The text area grows with your answer (up to 24 lines), then
+									scrolls—same line breaks reviewers see.
+								</p>
 							</label>
 						) : null}
 

@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { FirmRosterVirtualList } from "@/src/components/firm-roster-virtual-list";
 import { rosterW26 } from "@/src/data/roster-w26";
+import { useBalancedTextMaxWidth } from "@/src/hooks/use-balanced-text-max-width";
 import {
 	useRevealStaggerChildren,
 	useRevealUp,
 } from "@/src/hooks/use-landing-scroll-reveals";
+import { useMediaMinWidth } from "@/src/hooks/use-media-min-width";
 import { ROSTER_TAB_ORDER, type RosterCategory } from "@/src/types/roster";
+
+const PRESIDENT_QUOTE_COPY =
+	"Our vision is to cultivate a space where analytical rigor meets creative problem-solving. We don't just analyze data; we craft narratives that drive strategic decisions.";
 
 export default function FirmSection() {
 	const tabs = useMemo(
@@ -38,8 +44,23 @@ export default function FirmSection() {
 
 	const historyRef = useRef<HTMLDivElement>(null);
 	const presidentRef = useRef<HTMLDivElement>(null);
+	const presidentQuoteScopeRef = useRef<HTMLQuoteElement>(null);
 	const firmIntroRef = useRef<HTMLDivElement>(null);
 	const teamListRef = useRef<HTMLDivElement>(null);
+
+	const isMdQuote = useMediaMinWidth("(min-width: 768px)");
+	const presidentQuoteFont = isMdQuote
+		? 'italic 400 30px "Playfair Display"'
+		: 'italic 400 24px "Playfair Display"';
+
+	const balancedPresidentQuoteWidthPx = useBalancedTextMaxWidth({
+		text: president ? PRESIDENT_QUOTE_COPY : "",
+		font: presidentQuoteFont,
+		minWidthPx: 260,
+		maxWidthCapPx: 640,
+		scopeRef: presidentQuoteScopeRef,
+		stepPx: 12,
+	});
 
 	useRevealUp(historyRef);
 	useRevealUp(presidentRef);
@@ -102,12 +123,19 @@ export default function FirmSection() {
 									referrerPolicy="no-referrer"
 								/>
 							</div>
-							<blockquote className="flex min-w-0 flex-col justify-center">
-								<p className="text-2xl md:text-3xl font-display italic leading-snug mb-8">
-									&ldquo;Our vision is to cultivate a space where analytical
-									rigor meets creative problem-solving. We don&apos;t just
-									analyze data; we craft narratives that drive strategic
-									decisions.&rdquo;
+							<blockquote
+								ref={presidentQuoteScopeRef}
+								className="flex min-w-0 flex-col justify-center"
+							>
+								<p
+									className={`mb-8 font-display text-2xl italic leading-snug md:text-3xl ${balancedPresidentQuoteWidthPx == null ? "max-w-xl" : "max-w-full"}`}
+									style={
+										balancedPresidentQuoteWidthPx != null
+											? { maxWidth: balancedPresidentQuoteWidthPx }
+											: undefined
+									}
+								>
+									&ldquo;{PRESIDENT_QUOTE_COPY}&rdquo;
 								</p>
 								<footer className="text-technical">
 									<span className="text-ink block mb-1">
@@ -143,7 +171,7 @@ export default function FirmSection() {
 										role="tab"
 										aria-selected={activeTab === tab}
 										onClick={() => setActiveTab(tab)}
-										className={`min-h-11 min-w-11 uppercase tracking-widest pb-1 border-b transition-colors ${
+										className={`min-h-11 min-w-11 uppercase tracking-widest pb-1 border-b transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded-sm ${
 											activeTab === tab
 												? "border-accent text-accent"
 												: "border-transparent text-muted hover:text-ink hover:border-border-strong/50"
@@ -176,33 +204,10 @@ export default function FirmSection() {
 						ref={teamListRef}
 						className="flex flex-col border-t border-border"
 					>
-						{filteredTeam.map((member) => (
-							<div
-								key={member.displayName}
-								className="firm-row group flex cursor-pointer flex-col items-start justify-between gap-4 border-b border-border px-4 py-6 transition-colors hover:bg-accent-muted/25 lg:flex-row lg:items-center lg:gap-0"
-							>
-								<div className="flex min-w-0 w-full items-center gap-6 lg:mb-0 lg:w-auto lg:gap-8">
-									<div className="h-16 w-16 shrink-0 overflow-hidden rounded-full border border-border-strong/40 opacity-95 ring-1 ring-border transition-opacity duration-500 group-hover:border-accent/45 group-hover:opacity-100">
-										<img
-											src={member.imageSrc}
-											alt={member.displayName}
-											width={128}
-											height={128}
-											loading="lazy"
-											decoding="async"
-											className="h-full w-full object-cover grayscale contrast-125 opacity-80 transition-all duration-500 ease-out group-hover:scale-110 group-hover:opacity-100"
-											referrerPolicy="no-referrer"
-										/>
-									</div>
-									<h4 className="min-w-0 break-words text-2xl font-display tracking-wide md:text-3xl">
-										{member.displayName}
-									</h4>
-								</div>
-								<div className="w-full shrink-0 text-left text-technical text-muted lg:w-auto lg:text-right">
-									{member.role}
-								</div>
-							</div>
-						))}
+						<FirmRosterVirtualList
+							members={filteredTeam}
+							revalidateKey={activeTab}
+						/>
 					</div>
 				</div>
 			</div>

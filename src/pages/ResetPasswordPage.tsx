@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import { focusFormControl } from "@/src/lib/focus-form-control";
 import { supabase } from "@/src/lib/supabase";
 
 type InvalidField = "password" | "confirm" | null;
@@ -43,13 +44,13 @@ export default function ResetPasswordPage() {
 		if (password.length < 8) {
 			setError("Use at least 8 characters.");
 			setInvalidField("password");
-			window.requestAnimationFrame(() => passwordRef.current?.focus());
+			window.requestAnimationFrame(() => focusFormControl(passwordRef.current));
 			return;
 		}
 		if (password !== confirm) {
 			setError("Passwords do not match.");
 			setInvalidField("confirm");
-			window.requestAnimationFrame(() => confirmRef.current?.focus());
+			window.requestAnimationFrame(() => focusFormControl(confirmRef.current));
 			return;
 		}
 		setPending(true);
@@ -58,7 +59,7 @@ export default function ResetPasswordPage() {
 		if (err) {
 			setError(err.message);
 			setInvalidField("password");
-			window.requestAnimationFrame(() => passwordRef.current?.focus());
+			window.requestAnimationFrame(() => focusFormControl(passwordRef.current));
 			return;
 		}
 		await supabase.auth.signOut();
@@ -91,10 +92,27 @@ export default function ResetPasswordPage() {
 								disabled={pending}
 								aria-invalid={invalidField === "password"}
 								aria-describedby={
-									error ? "reset-password-form-error" : undefined
+									error && invalidField === "password"
+										? "reset-password-requirements-hint reset-password-field-error"
+										: "reset-password-requirements-hint"
 								}
-								className="w-full bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none disabled:opacity-50"
+								className="w-full bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
 							/>
+							<p
+								id="reset-password-requirements-hint"
+								className="text-technical text-xs text-muted"
+							>
+								At least 8 characters.
+							</p>
+							{error && invalidField === "password" ? (
+								<p
+									id="reset-password-field-error"
+									className="text-sm text-danger"
+									role="alert"
+								>
+									{error}
+								</p>
+							) : null}
 						</label>
 						<label className="block space-y-1" htmlFor="reset-confirm-password">
 							<span className="text-technical text-muted">
@@ -112,20 +130,28 @@ export default function ResetPasswordPage() {
 								disabled={pending}
 								aria-invalid={invalidField === "confirm"}
 								aria-describedby={
-									error ? "reset-password-form-error" : undefined
+									error && invalidField === "confirm"
+										? "reset-confirm-hint reset-confirm-field-error"
+										: "reset-confirm-hint"
 								}
-								className="w-full bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none disabled:opacity-50"
+								className="w-full bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
 							/>
-						</label>
-						{error ? (
 							<p
-								id="reset-password-form-error"
-								className="text-sm text-danger"
-								role="alert"
+								id="reset-confirm-hint"
+								className="text-technical text-xs text-muted"
 							>
-								{error}
+								Must match the field above.
 							</p>
-						) : null}
+							{error && invalidField === "confirm" ? (
+								<p
+									id="reset-confirm-field-error"
+									className="text-sm text-danger"
+									role="alert"
+								>
+									{error}
+								</p>
+							) : null}
+						</label>
 						<button
 							type="submit"
 							disabled={pending}

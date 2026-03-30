@@ -140,7 +140,7 @@ export default function AdminRolesPage() {
 						value={userId}
 						onChange={(e) => setUserId(e.target.value)}
 						placeholder="uuid"
-						className="w-full bg-transparent border border-border px-3 py-2 min-h-11 font-data focus:border-ink outline-none"
+						className="w-full bg-transparent border border-border px-3 py-2 min-h-11 font-data focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 					/>
 				</label>
 				<label className="space-y-1">

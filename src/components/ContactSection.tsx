@@ -167,7 +167,7 @@ export default function ContactSection() {
 										name="name"
 										placeholder="First & Last Name"
 										autoComplete="name"
-										className="w-full bg-transparent border-b border-border py-4 text-xl font-sans font-light text-ink placeholder:text-muted/50 focus:outline-none focus:border-ink focus:border-b-2 transition-all peer"
+										className="w-full bg-transparent border-b border-border py-4 text-xl font-sans font-light text-ink placeholder:text-muted/50 outline-none focus:border-ink focus:border-b-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring transition-all peer"
 										required
 									/>
 								</div>
@@ -184,7 +184,7 @@ export default function ContactSection() {
 										name="email"
 										placeholder="Email Address"
 										autoComplete="email"
-										className="w-full bg-transparent border-b border-border py-4 text-xl font-sans font-light text-ink placeholder:text-muted/50 focus:outline-none focus:border-ink focus:border-b-2 transition-all peer"
+										className="w-full bg-transparent border-b border-border py-4 text-xl font-sans font-light text-ink placeholder:text-muted/50 outline-none focus:border-ink focus:border-b-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring transition-all peer"
 										required
 									/>
 								</div>
@@ -200,7 +200,7 @@ export default function ContactSection() {
 										id="contact-subject"
 										name="subject"
 										placeholder="Subject"
-										className="w-full bg-transparent border-b border-border py-4 text-xl font-sans font-light text-ink placeholder:text-muted/50 focus:outline-none focus:border-ink focus:border-b-2 transition-all peer"
+										className="w-full bg-transparent border-b border-border py-4 text-xl font-sans font-light text-ink placeholder:text-muted/50 outline-none focus:border-ink focus:border-b-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring transition-all peer"
 										required
 									/>
 								</div>
@@ -216,7 +216,7 @@ export default function ContactSection() {
 										name="message"
 										placeholder="Message"
 										rows={4}
-										className="w-full bg-transparent border-b border-border py-4 text-xl font-sans font-light text-ink placeholder:text-muted/50 focus:outline-none focus:border-ink focus:border-b-2 transition-all resize-none peer"
+										className="w-full bg-transparent border-b border-border py-4 text-xl font-sans font-light text-ink placeholder:text-muted/50 outline-none focus:border-ink focus:border-b-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring transition-all resize-none peer"
 										required
 									/>
 								</div>

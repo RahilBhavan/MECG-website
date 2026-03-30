@@ -60,3 +60,55 @@ export function mapAuthErrorMessage(raw: string): {
 		detail,
 	};
 }
+
+export type LoginAuthErrorTarget = "email" | "password" | "form";
+
+/** Which control should own the error + focus for sign-in failures. */
+export function classifyLoginAuthError(raw: string): {
+	friendly: string;
+	detail: string;
+	target: LoginAuthErrorTarget;
+} {
+	const mapped = mapAuthErrorMessage(raw);
+	const lower = raw.toLowerCase();
+
+	if (lower.includes("email not confirmed")) {
+		return { ...mapped, target: "email" };
+	}
+	if (
+		lower.includes("invalid login credentials") ||
+		lower.includes("invalid credentials")
+	) {
+		return { ...mapped, target: "password" };
+	}
+
+	return { ...mapped, target: "form" };
+}
+
+export type SignUpAuthErrorTarget =
+	| "displayName"
+	| "email"
+	| "password"
+	| "form";
+
+/** Which control should own the error + focus for sign-up failures. */
+export function classifySignUpAuthError(raw: string): {
+	friendly: string;
+	detail: string;
+	target: SignUpAuthErrorTarget;
+} {
+	const mapped = mapAuthErrorMessage(raw);
+	const lower = raw.toLowerCase();
+
+	if (
+		lower.includes("user already registered") ||
+		lower.includes("already been registered")
+	) {
+		return { ...mapped, target: "email" };
+	}
+	if (lower.includes("password") && lower.includes("least")) {
+		return { ...mapped, target: "password" };
+	}
+
+	return { ...mapped, target: "form" };
+}

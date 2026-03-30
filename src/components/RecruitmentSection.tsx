@@ -1,10 +1,14 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
+import { useBalancedTextMaxWidth } from "@/src/hooks/use-balanced-text-max-width";
 import {
 	useRevealStaggerChildren,
 	useRevealUp,
 } from "@/src/hooks/use-landing-scroll-reveals";
+
+const RECRUITMENT_PITCH_COPY =
+	"Our recruitment process is rigorous, designed to identify individuals who possess both analytical horsepower and creative vision. We seek those who are ready to shape the future of business and entertainment.";
 
 const timelineEvents = [
 	{ date: "SEP 05", name: "Mass Meeting I", location: "EECS 1311, 7:00 PM" },
@@ -45,6 +49,13 @@ const faqs = [
 export default function RecruitmentSection() {
 	const [openFaq, setOpenFaq] = useState<number | null>(null);
 	const pitchRef = useRef<HTMLDivElement>(null);
+	const balancedPitchMaxWidthPx = useBalancedTextMaxWidth({
+		text: RECRUITMENT_PITCH_COPY,
+		font: '300 18px "Inter"',
+		minWidthPx: 280,
+		maxWidthCapPx: 672,
+		scopeRef: pitchRef,
+	});
 	const timelineRef = useRef<HTMLDivElement>(null);
 	const timelineListRef = useRef<HTMLDivElement>(null);
 	const faqRef = useRef<HTMLDivElement>(null);
@@ -74,11 +85,15 @@ export default function RecruitmentSection() {
 						<br />
 						EXCEPTIONAL TALENT.
 					</h3>
-					<p className="reveal-up text-lg font-sans font-light text-muted max-w-2xl">
-						Our recruitment process is rigorous, designed to identify
-						individuals who possess both analytical horsepower and creative
-						vision. We seek those who are ready to shape the future of business
-						and entertainment.
+					<p
+						className={`reveal-up w-full text-lg font-sans font-light text-muted ${balancedPitchMaxWidthPx == null ? "max-w-2xl" : "max-w-full"}`}
+						style={
+							balancedPitchMaxWidthPx != null
+								? { maxWidth: balancedPitchMaxWidthPx }
+								: undefined
+						}
+					>
+						{RECRUITMENT_PITCH_COPY}
 					</p>
 					<p className="reveal-up mt-8">
 						<Link

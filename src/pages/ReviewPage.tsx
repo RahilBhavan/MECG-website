@@ -16,8 +16,10 @@ import {
 import { Link } from "react-router-dom";
 
 import { useAuth } from "@/src/auth/AuthProvider";
+import { ReviewPageSkeleton } from "@/src/components/skeletons/ReviewPageSkeleton";
 import { useToast } from "@/src/components/toast/ToastProvider";
 import { usePrefersReducedMotion } from "@/src/hooks/use-prefers-reduced-motion";
+import { usePretextTextareaRows } from "@/src/hooks/use-pretext-textarea-rows";
 import { useReviewCardStackMinHeight } from "@/src/hooks/use-review-card-stack-min-height";
 import { createApplicationHeadshotSignedUrl } from "@/src/lib/application-headshot-storage";
 import { supabase } from "@/src/lib/supabase";
@@ -218,6 +220,14 @@ export default function ReviewPage() {
 	);
 
 	const cardContentRef = useRef<HTMLDivElement>(null);
+	const screeningNotesRef = useRef<HTMLTextAreaElement>(null);
+	const screeningNotesRows = usePretextTextareaRows({
+		textareaRef: screeningNotesRef,
+		value: notes,
+		minRows: 4,
+		maxRows: 14,
+	});
+
 	const reviewStackMinHeightPx = useReviewCardStackMinHeight(
 		answers,
 		nextApp ? nextAnswers : null,
@@ -403,28 +413,7 @@ export default function ReviewPage() {
 						: null;
 
 	if (loading) {
-		return (
-			<div className="space-y-8">
-				<div className="space-y-2">
-					<div className="h-10 w-56 animate-pulse rounded bg-ink/10" />
-					<div className="h-4 max-w-xl animate-pulse rounded bg-ink/10" />
-				</div>
-				<div className="flex flex-wrap gap-3">
-					<div className="h-11 w-11 animate-pulse rounded border border-border bg-ink/5" />
-					<div className="h-11 w-48 animate-pulse rounded border border-border bg-ink/5" />
-					<div className="h-11 w-24 animate-pulse rounded border border-border bg-ink/5" />
-				</div>
-				<div className="mx-auto min-h-[380px] max-w-lg animate-pulse rounded border border-border bg-ink/5 p-6">
-					<div className="mb-4 h-8 w-2/3 rounded bg-ink/10" />
-					<div className="mb-6 h-4 w-1/2 rounded bg-ink/10" />
-					<div className="space-y-2">
-						<div className="h-3 w-full rounded bg-ink/10" />
-						<div className="h-3 w-full rounded bg-ink/10" />
-						<div className="h-3 w-4/5 rounded bg-ink/10" />
-					</div>
-				</div>
-			</div>
-		);
+		return <ReviewPageSkeleton />;
 	}
 
 	return (
@@ -472,7 +461,7 @@ export default function ReviewPage() {
 							<select
 								value={batchSelect}
 								onChange={(e) => setBatchSelect(e.target.value)}
-								className="bg-bg border border-border px-2 py-2 min-h-11 font-sans w-40 max-w-full focus:border-ink outline-none"
+								className="bg-bg border border-border px-2 py-2 min-h-11 font-sans w-40 max-w-full focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 							>
 								<option value="all">All batches</option>
 								{knownBatches.map((id) => (
@@ -491,7 +480,7 @@ export default function ReviewPage() {
 								value={batchCustom}
 								onChange={(e) => setBatchCustom(e.target.value)}
 								placeholder="Custom id (overrides menu)"
-								className="bg-transparent border border-border px-2 py-2 min-h-11 font-sans w-40 sm:w-36 focus:border-ink outline-none"
+								className="bg-transparent border border-border px-2 py-2 min-h-11 font-sans w-40 sm:w-36 focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 							/>
 						</label>
 					</div>
@@ -522,7 +511,7 @@ export default function ReviewPage() {
 					<button
 						type="button"
 						onClick={dismissKeyboardHelp}
-						className="border border-border px-3 py-2 min-h-11 hover:border-ink"
+						className="border border-border px-3 py-2 min-h-11 hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
 					>
 						Got it
 					</button>
@@ -723,11 +712,20 @@ export default function ReviewPage() {
 							Private notes
 						</span>
 						<textarea
-							rows={4}
+							ref={screeningNotesRef}
+							id="review-screening-notes"
+							rows={screeningNotesRows}
 							value={notes}
 							onChange={(e) => setNotes(e.target.value)}
-							className="w-full bg-transparent border border-border px-2 py-2 font-sans text-sm"
+							aria-describedby="review-screening-notes-hint"
+							className="w-full max-h-64 overflow-y-auto bg-transparent border border-border px-2 py-2 font-sans text-sm"
 						/>
+						<p
+							id="review-screening-notes-hint"
+							className="text-technical text-[11px] text-muted leading-snug"
+						>
+							Expands up to 14 lines with your text, then scrolls.
+						</p>
 					</label>
 					<div className="grid grid-cols-3 gap-2">
 						<button

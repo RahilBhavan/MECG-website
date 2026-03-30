@@ -1,11 +1,20 @@
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 
-import ContactSection from "@/src/components/ContactSection";
-import FirmSection from "@/src/components/FirmSection";
 import ImpactSection from "@/src/components/ImpactSection";
 import { LandingSubNav } from "@/src/components/landing-sub-nav";
-import RecruitmentSection from "@/src/components/RecruitmentSection";
+
+const FirmSection = lazy(() => import("@/src/components/FirmSection"));
+const RecruitmentSection = lazy(
+	() => import("@/src/components/RecruitmentSection"),
+);
+const ContactSection = lazy(() => import("@/src/components/ContactSection"));
+
+function BelowFoldFallback() {
+	return (
+		<div className="min-h-[40vh] w-full animate-pulse bg-ink/5" aria-hidden />
+	);
+}
 
 type LandingMainLazyProps = {
 	onNavigate: (sectionId: string) => void;
@@ -25,9 +34,15 @@ export function LandingMainLazy({ onNavigate }: LandingMainLazyProps) {
 		<>
 			<LandingSubNav onNavigate={onNavigate} />
 			<ImpactSection />
-			<FirmSection />
-			<RecruitmentSection />
-			<ContactSection />
+			<Suspense fallback={<BelowFoldFallback />}>
+				<FirmSection />
+			</Suspense>
+			<Suspense fallback={<BelowFoldFallback />}>
+				<RecruitmentSection />
+			</Suspense>
+			<Suspense fallback={<BelowFoldFallback />}>
+				<ContactSection />
+			</Suspense>
 		</>
 	);
 }

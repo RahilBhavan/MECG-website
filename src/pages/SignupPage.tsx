@@ -3,7 +3,8 @@ import { useRef, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 
 import { useAuth } from "@/src/auth/AuthProvider";
-import { mapAuthErrorMessage } from "@/src/lib/auth-errors";
+import { classifySignUpAuthError } from "@/src/lib/auth-errors";
+import { focusFormControl } from "@/src/lib/focus-form-control";
 
 export default function SignupPage() {
 	const { user, configured, loading, signUpWithPassword } = useAuth();
@@ -12,7 +13,12 @@ export default function SignupPage() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
-	const [errorFriendly, setErrorFriendly] = useState<string | null>(null);
+	const [displayNameError, setDisplayNameError] = useState<string | null>(null);
+	const [signUpEmailError, setSignUpEmailError] = useState<string | null>(null);
+	const [signUpPasswordError, setSignUpPasswordError] = useState<string | null>(
+		null,
+	);
+	const [signUpFormError, setSignUpFormError] = useState<string | null>(null);
 	const [errorDetail, setErrorDetail] = useState<string | null>(null);
 	const [successPanel, setSuccessPanel] = useState(false);
 	const [pending, setPending] = useState(false);
@@ -38,7 +44,10 @@ export default function SignupPage() {
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
 		if (pending) return;
-		setErrorFriendly(null);
+		setDisplayNameError(null);
+		setSignUpEmailError(null);
+		setSignUpPasswordError(null);
+		setSignUpFormError(null);
 		setErrorDetail(null);
 		setPending(true);
 		const { error: err, session } = await signUpWithPassword(
@@ -48,13 +57,17 @@ export default function SignupPage() {
 		);
 		setPending(false);
 		if (err) {
-			const { friendly, detail } = mapAuthErrorMessage(err.message);
-			setErrorFriendly(friendly);
+			const { friendly, detail, target } = classifySignUpAuthError(err.message);
 			setErrorDetail(detail);
+			if (target === "displayName") setDisplayNameError(friendly);
+			else if (target === "email") setSignUpEmailError(friendly);
+			else if (target === "password") setSignUpPasswordError(friendly);
+			else setSignUpFormError(friendly);
 			window.requestAnimationFrame(() => {
-				if (!displayName.trim()) displayNameRef.current?.focus();
-				else if (!email.trim()) emailRef.current?.focus();
-				else passwordRef.current?.focus();
+				if (target === "displayName") focusFormControl(displayNameRef.current);
+				else if (target === "email") focusFormControl(emailRef.current);
+				else if (target === "password") focusFormControl(passwordRef.current);
+				else focusFormControl(displayNameRef.current);
 			});
 			return;
 		}
@@ -114,6 +127,15 @@ export default function SignupPage() {
 					className="space-y-4"
 					noValidate
 				>
+					{signUpFormError ? (
+						<p
+							id="signup-auth-error"
+							className="text-sm text-danger border border-danger/40 px-3 py-2"
+							role="alert"
+						>
+							{signUpFormError}
+						</p>
+					) : null}
 					<label className="block space-y-1" htmlFor="signup-display-name">
 						<span className="text-technical text-muted">Display name</span>
 						<input
@@ -124,10 +146,24 @@ export default function SignupPage() {
 							value={displayName}
 							onChange={(e) => setDisplayName(e.target.value)}
 							disabled={pending}
-							aria-invalid={!!errorFriendly}
-							aria-describedby={errorFriendly ? "signup-form-error" : undefined}
-							className="w-full bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none disabled:opacity-50"
+							aria-invalid={!!(displayNameError || signUpFormError)}
+							aria-describedby={
+								signUpFormError
+									? "signup-auth-error"
+									: displayNameError
+										? "signup-display-name-error"
+										: undefined
+							}
+							className="w-full bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
 						/>
+						{displayNameError ? (
+							<span
+								id="signup-display-name-error"
+								className="text-xs text-danger"
+							>
+								{displayNameError}
+							</span>
+						) : null}
 					</label>
 					<label className="block space-y-1" htmlFor="signup-email">
 						<span className="text-technical text-muted">Email</span>
@@ -140,10 +176,21 @@ export default function SignupPage() {
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
 							disabled={pending}
-							aria-invalid={!!errorFriendly}
-							aria-describedby={errorFriendly ? "signup-form-error" : undefined}
-							className="w-full bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none disabled:opacity-50"
+							aria-invalid={!!(signUpEmailError || signUpFormError)}
+							aria-describedby={
+								signUpFormError
+									? "signup-auth-error"
+									: signUpEmailError
+										? "signup-email-error"
+										: undefined
+							}
+							className="w-full bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
 						/>
+						{signUpEmailError ? (
+							<span id="signup-email-error" className="text-xs text-danger">
+								{signUpEmailError}
+							</span>
+						) : null}
 					</label>
 					<div className="space-y-1">
 						<span
@@ -164,11 +211,15 @@ export default function SignupPage() {
 								onChange={(e) => setPassword(e.target.value)}
 								disabled={pending}
 								aria-labelledby="signup-password-label"
-								aria-invalid={!!errorFriendly}
+								aria-invalid={!!(signUpPasswordError || signUpFormError)}
 								aria-describedby={
-									errorFriendly ? "signup-form-error" : undefined
+									signUpFormError
+										? "signup-auth-error"
+										: signUpPasswordError
+											? "signup-password-error"
+											: "signup-password-hint"
 								}
-								className="flex-1 min-w-0 bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none disabled:opacity-50"
+								className="flex-1 min-w-0 bg-transparent border border-border px-3 py-2 font-sans focus:border-ink outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
 							/>
 							<button
 								type="button"
@@ -185,16 +236,19 @@ export default function SignupPage() {
 								)}
 							</button>
 						</div>
+						{signUpPasswordError ? (
+							<span id="signup-password-error" className="text-xs text-danger">
+								{signUpPasswordError}
+							</span>
+						) : (
+							<p
+								id="signup-password-hint"
+								className="text-technical text-xs text-muted"
+							>
+								At least 8 characters.
+							</p>
+						)}
 					</div>
-					{errorFriendly ? (
-						<p
-							id="signup-form-error"
-							className="text-sm text-danger"
-							role="alert"
-						>
-							{errorFriendly}
-						</p>
-					) : null}
 					{errorDetail ? (
 						<details className="text-technical text-muted text-xs">
 							<summary className="cursor-pointer hover:text-ink">

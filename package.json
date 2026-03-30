@@ -33,6 +33,7 @@
 		"@studio-freight/lenis": "^1.0.42",
 		"@supabase/supabase-js": "^2.100.1",
 		"@tailwindcss/vite": "^4.1.14",
+		"@tanstack/react-virtual": "^3.13.23",
 		"@vitejs/plugin-react": "^5.0.4",
 		"balloons-js": "^0.0.3",
 		"class-variance-authority": "^0.7.1",
