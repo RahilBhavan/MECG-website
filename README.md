@@ -18,6 +18,31 @@ Vite + React 19 + React Router 7 + Tailwind 4 + Supabase. Use **Bun** for script
 
 Open Graph image: `bun run og:generate` writes `public/og.png`.
 
+## Observability and analytics
+
+Optional env vars (see [`.env.example`](.env.example)):
+
+- **`VITE_SENTRY_DSN`** — client error reporting (Sentry). In dev, set **`VITE_SENTRY_DEV=true`** to enable.
+- **`VITE_PLAUSIBLE_DOMAIN`** — loads Plausible; SPA page views and custom **`Funnel`** events on signup submit and apply submit.
+- **`VITE_ANALYTICS_EVENTS_ENDPOINT`** — HTTPS URL receiving small JSON **`sendBeacon`** bodies for `pageview` / `funnel` (production only). Separate from **`VITE_WEB_VITALS_ENDPOINT`** (Core Web Vitals).
+
+## SEO note (SPA)
+
+`react-helmet-async` updates title, canonical, and Open Graph per route in the live app. Many link-preview crawlers do not execute JavaScript; if per-URL share cards for `/login` or `/signup` are critical, add **prerender** for those paths (e.g. a Vite prerender plugin) or **bot-specific HTML** at the edge.
+
+## E2E credentials
+
+`tests/e2e/critical-paths.spec.ts` runs **only when** role env vars are set (loaded from `.env.local` by Playwright if present):
+
+- **`E2E_APPLICANT_EMAIL`** / **`E2E_APPLICANT_PASSWORD`**
+- **`E2E_REVIEWER_EMAIL`** / **`E2E_REVIEWER_PASSWORD`**
+- **`E2E_ALUMNI_EMAIL`** / **`E2E_ALUMNI_PASSWORD`**
+- **`E2E_ADMIN_EMAIL`** / **`E2E_ADMIN_PASSWORD`**
+
+Use a staging Supabase project and dedicated test users with the right `user_roles`. Review and apply tests **skip** when the queue is empty or the applicant has already submitted.
+
+Optional: `bun run test:e2e:save-auth` (with applicant env vars set) writes `tests/.auth/applicant.json` for reuse in a custom Playwright `storageState` project.
+
 Supabase schema docs: [`docs/supabase/rls-and-routes.md`](docs/supabase/rls-and-routes.md). Regenerate DB types after `db:start`: `bun run db:types`.
 
 ## shadcn-style UI

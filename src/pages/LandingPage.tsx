@@ -5,6 +5,8 @@ import { useLocation } from "react-router-dom";
 
 import CustomCursor from "@/src/components/CustomCursor";
 import HeroSection from "@/src/components/HeroSection";
+import { LandingJsonLd } from "@/src/components/landing-json-ld.tsx";
+import { Seo } from "@/src/components/seo.tsx";
 import { usePrefersReducedMotion } from "@/src/hooks/use-prefers-reduced-motion";
 
 const LandingMainLazy = lazy(() =>
@@ -135,6 +137,12 @@ export default function LandingPage() {
 		<div
 			className={`bg-bg text-ink min-h-dvh-screen selection:bg-accent selection:text-bg ${reduceMotion ? "" : "cursor-none"}`}
 		>
+			<Seo
+				title="MECG — Michigan Economics Consulting Group"
+				description="Selective economics consulting community at the University of Michigan. Apply, connect with alumni, and access member tools."
+				pathname="/"
+			/>
+			<LandingJsonLd />
 			{!reduceMotion ? <CustomCursor /> : null}
 			<a href="#main-content" className="skip-link" onClick={handleSkipToMain}>
 				Skip to main content

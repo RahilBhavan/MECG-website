@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-
 import { useAuth } from "@/src/auth/AuthProvider";
+import { AdminSubnav } from "@/src/components/admin-subnav";
 import { supabase } from "@/src/lib/supabase";
 import type { AppRole, ProfileRow, UserRoleRow } from "@/src/types/database";
 
@@ -112,6 +112,7 @@ export default function AdminRolesPage() {
 
 	return (
 		<div className="space-y-10">
+			<AdminSubnav />
 			<div>
 				<h1 className="type-portal-title-sans">Role administration</h1>
 				<p className="text-technical text-muted max-w-3xl">

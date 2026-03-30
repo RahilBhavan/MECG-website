@@ -14,6 +14,17 @@ interface ImportMetaEnv {
 	readonly VITE_REVIEW_BATCH_IDS?: string;
 	/** Optional HTTPS endpoint for `navigator.sendBeacon` Core Web Vitals (production only). */
 	readonly VITE_WEB_VITALS_ENDPOINT?: string;
+	/** Sentry browser DSN; dev only if `VITE_SENTRY_DEV=true`. */
+	readonly VITE_SENTRY_DSN?: string;
+	readonly VITE_SENTRY_DEV?: string;
+	readonly VITE_PLAUSIBLE_DOMAIN?: string;
+	readonly VITE_PLAUSIBLE_SCRIPT_URL?: string;
+	readonly VITE_ANALYTICS_EVENTS_ENDPOINT?: string;
+	/** Applicant support / admissions email (mailto in Apply + status hub). */
+	readonly VITE_SUPPORT_EMAIL?: string;
+	readonly VITE_CONTACT_EMAIL?: string;
+	/** Optional public contact page URL. */
+	readonly VITE_CONTACT_URL?: string;
 }
 
 interface ImportMeta {

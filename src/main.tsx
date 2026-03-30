@@ -12,8 +12,14 @@ import "@fontsource/playfair-display/latin-600.css";
 import "@fontsource/playfair-display/latin-800.css";
 
 import App from "./App.tsx";
+import "@/src/i18n/config.ts";
+import { initAnalytics } from "./lib/analytics.ts";
+import { initSentry } from "./lib/init-sentry.ts";
 import { initReportWebVitals } from "./lib/report-web-vitals.ts";
 import "./index.css";
+
+initSentry();
+initAnalytics();
 
 const rootEl = document.getElementById("root");
 if (!rootEl) {

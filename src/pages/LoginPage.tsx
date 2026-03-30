@@ -1,9 +1,11 @@
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { getPostLoginPath, useAuth } from "@/src/auth/AuthProvider";
+import { Seo } from "@/src/components/seo.tsx";
 import {
 	classifyLoginAuthError,
 	mapAuthErrorMessage,
@@ -12,6 +14,7 @@ import { focusFormControl } from "@/src/lib/focus-form-control";
 import { prefetchPortalRoute } from "@/src/lib/prefetch-portal";
 
 export default function LoginPage() {
+	const { t } = useTranslation("common");
 	const {
 		user,
 		roles,
@@ -115,6 +118,11 @@ export default function LoginPage() {
 	if (forgotMode) {
 		return (
 			<div className="min-h-dvh-screen page-safe-insets flex flex-col items-center justify-center bg-bg text-ink">
+				<Seo
+					title="Reset password — MECG"
+					description="Request a password reset link for your MECG account."
+					pathname="/login"
+				/>
 				<div className="w-full max-w-md space-y-6 rounded-lg border border-border-strong bg-surface/30 p-6 shadow-[var(--shadow-marketing-md)] sm:p-8">
 					<h1 className="type-auth-title">Reset password</h1>
 					<p className="text-technical text-muted">
@@ -201,8 +209,13 @@ export default function LoginPage() {
 
 	return (
 		<div className="min-h-dvh-screen page-safe-insets flex flex-col items-center justify-center bg-bg text-ink">
+			<Seo
+				title="Sign in — MECG"
+				description="Sign in to the Michigan Economics Consulting Group portal for applicants, alumni, reviewers, and admins."
+				pathname="/login"
+			/>
 			<div className="w-full max-w-md space-y-6 rounded-lg border border-border-strong bg-surface/30 p-6 shadow-[var(--shadow-marketing-md)] sm:p-8">
-				<h1 className="type-auth-title">Sign in</h1>
+				<h1 className="type-auth-title">{t("auth.signIn")}</h1>
 				<p className="text-technical text-muted">
 					Access is controlled by roles assigned in Supabase (applicant, alumni,
 					reviewer, admin).
@@ -314,7 +327,7 @@ export default function LoginPage() {
 								Signing in…
 							</>
 						) : (
-							"Sign in"
+							t("auth.signInSubmit")
 						)}
 					</Button>
 				</form>

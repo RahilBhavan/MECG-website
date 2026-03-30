@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import { Seo } from "@/src/components/seo.tsx";
 import { focusFormControl } from "@/src/lib/focus-form-control";
 import { supabase } from "@/src/lib/supabase";
 
@@ -68,6 +69,11 @@ export default function ResetPasswordPage() {
 
 	return (
 		<div className="min-h-dvh-screen page-safe-insets flex flex-col items-center justify-center bg-bg text-ink">
+			<Seo
+				title="Reset password — MECG"
+				description="Choose a new password for your MECG account."
+				pathname="/reset-password"
+			/>
 			<div className="w-full max-w-md space-y-6 rounded-lg border border-border-strong bg-surface/30 p-6 shadow-[var(--shadow-marketing-md)] sm:p-8">
 				<h1 className="type-auth-title">Set new password</h1>
 				{!ready ? (

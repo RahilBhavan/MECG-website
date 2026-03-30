@@ -4,6 +4,7 @@ dist/
 coverage/
 test-results/
 playwright-report/
+tests/.auth/
 playwright/.cache/
 .DS_Store
 *.log

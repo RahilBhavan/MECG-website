@@ -2,9 +2,23 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { hasRole, useAuth } from "@/src/auth/AuthProvider";
+import {
+	AcceptedOnboardingPanel,
+	RejectedClosurePanel,
+} from "@/src/components/application-post-decision-panels";
+import { ApplicationStatusHub } from "@/src/components/application-status-hub";
 import { ApplyPageSkeleton } from "@/src/components/skeletons/ApplyPageSkeleton";
 import { useToast } from "@/src/components/toast/ToastProvider";
 import { usePretextTextareaRows } from "@/src/hooks/use-pretext-textarea-rows";
+import {
+	blurFieldMessage,
+	buildAnswersPayload,
+	emptyAnswers,
+	getApplicationSubmitFieldErrors,
+	normalizeAnswers,
+	resumeUrlFieldError,
+	serializeDraftSnapshot,
+} from "@/src/lib/application-form";
 import {
 	APPLICATION_HEADSHOT_ACCEPT,
 	APPLICATION_HEADSHOT_MAX_BYTES,
@@ -23,6 +37,12 @@ import type {
 
 const STEPS = ["About you", "Essay", "Links"] as const;
 
+const AUTOSAVE_DEBOUNCE_MS = 1000;
+
+const HEADSHOT_MAX_MB = Math.round(
+	APPLICATION_HEADSHOT_MAX_BYTES / (1024 * 1024),
+);
+
 const TEXT_FIELD_ORDER = [
 	"fullName",
 	"major",
@@ -37,6 +57,7 @@ const SUBMIT_FOCUS_ORDER = [
 	"major",
 	"academicYear",
 	"whyMecg",
+	"resumeUrl",
 ] as const;
 
 /** Shared focus ring for portal form controls (keyboard + pointer). */
@@ -51,34 +72,11 @@ function RequiredMark() {
 	);
 }
 
-function emptyAnswers(): ApplicationAnswers {
-	return {
-		fullName: "",
-		headshotPath: "",
-		major: "",
-		academicYear: "",
-		whyMecg: "",
-		resumeUrl: "",
-	};
-}
-
-function normalizeAnswers(raw: unknown): ApplicationAnswers {
-	if (!raw || typeof raw !== "object") return emptyAnswers();
-	const o = raw as Record<string, unknown>;
-	return {
-		fullName: String(o.fullName ?? ""),
-		headshotPath: o.headshotPath != null ? String(o.headshotPath) : "",
-		major: String(o.major ?? ""),
-		academicYear: String(o.academicYear ?? ""),
-		whyMecg: String(o.whyMecg ?? ""),
-		resumeUrl: o.resumeUrl != null ? String(o.resumeUrl) : "",
-	};
-}
-
 function stepForField(
-	key: (typeof TEXT_FIELD_ORDER)[number] | "headshotPath",
+	key: (typeof TEXT_FIELD_ORDER)[number] | "headshotPath" | "resumeUrl",
 ): number {
 	if (key === "whyMecg") return 1;
+	if (key === "resumeUrl") return 2;
 	return 0;
 }
 
@@ -143,11 +141,19 @@ export default function ApplyPage() {
 	);
 	const [saveNoticeError, setSaveNoticeError] = useState<string | null>(null);
 	const saveNoticeResetRef = useRef<number | null>(null);
+	const answersRef = useRef(answers);
+	const batchIdRef = useRef(batchId);
+	const lastSyncedSnapshotRef = useRef("");
+	const lastSaveFailedRef = useRef(false);
+	const autosaveTimerRef = useRef<number | null>(null);
+	const [headshotUploadStatus, setHeadshotUploadStatus] = useState("");
+	const [submitBlockMessage, setSubmitBlockMessage] = useState("");
 
 	const fullNameRef = useRef<HTMLInputElement>(null);
 	const majorRef = useRef<HTMLInputElement>(null);
 	const academicYearRef = useRef<HTMLInputElement>(null);
 	const whyMecgRef = useRef<HTMLTextAreaElement>(null);
+	const resumeUrlRef = useRef<HTMLInputElement>(null);
 	const submitDialogRef = useRef<HTMLDialogElement>(null);
 	const headshotPickRef = useRef<HTMLButtonElement>(null);
 	const headshotInputRef = useRef<HTMLInputElement>(null);
@@ -209,6 +215,11 @@ export default function ApplyPage() {
 		localHeadshotObjectUrlRef.current = url;
 		setLocalHeadshotPreviewUrl(url);
 	}
+
+	useEffect(() => {
+		answersRef.current = answers;
+		batchIdRef.current = batchId;
+	}, [answers, batchId]);
 
 	useEffect(() => {
 		return () => {
@@ -276,11 +287,22 @@ export default function ApplyPage() {
 				return;
 			}
 			const created = insert.data as ApplicationRow;
-			setRow(created);
+			setRow({
+				...created,
+				tags: created.tags ?? [],
+				cohort: created.cohort ?? null,
+				assigned_reviewer_id: created.assigned_reviewer_id ?? null,
+			});
 			setAnswers(normalizeAnswers(created.answers));
 			setBatchId(created.batch_id);
 		} else {
-			setRow(data as ApplicationRow);
+			const app = data as ApplicationRow;
+			setRow({
+				...app,
+				tags: app.tags ?? [],
+				cohort: app.cohort ?? null,
+				assigned_reviewer_id: app.assigned_reviewer_id ?? null,
+			});
 			setAnswers(normalizeAnswers(data.answers));
 			setBatchId(data.batch_id);
 		}
@@ -291,24 +313,30 @@ export default function ApplyPage() {
 		void load();
 	}, [load]);
 
-	function scheduleSaveNoticeReset() {
+	const scheduleSaveNoticeReset = useCallback(() => {
 		if (saveNoticeResetRef.current != null)
 			window.clearTimeout(saveNoticeResetRef.current);
 		saveNoticeResetRef.current = window.setTimeout(() => {
 			setSaveNotice("idle");
 			saveNoticeResetRef.current = null;
 		}, 5000);
-	}
+	}, []);
+
+	/** Align snapshot when a draft row is loaded/refreshed from the server (not on each keystroke). */
+	useEffect(() => {
+		if (loading || !row || row.status !== "draft") return;
+		lastSyncedSnapshotRef.current = serializeDraftSnapshot(
+			answersRef.current,
+			batchIdRef.current,
+		);
+	}, [loading, row]);
 
 	function blurValidateField(
 		field: (typeof TEXT_FIELD_ORDER)[number],
 		value: string,
 	) {
-		if (!value.trim()) {
-			setFieldErrors((f) => ({ ...f, [field]: "Required" }));
-		} else {
-			setFieldErrors((f) => ({ ...f, [field]: "" }));
-		}
+		const msg = blurFieldMessage(field, value);
+		setFieldErrors((f) => ({ ...f, [field]: msg }));
 	}
 
 	function focusFirstFieldError(errors: Record<string, string>) {
@@ -326,7 +354,17 @@ export default function ApplyPage() {
 				});
 				break;
 			}
-			const ref = fieldRefs[key];
+			if (key === "resumeUrl") {
+				window.requestAnimationFrame(() => {
+					resumeUrlRef.current?.focus();
+					resumeUrlRef.current?.scrollIntoView({
+						block: "nearest",
+						behavior: getPrefersReducedMotion() ? "auto" : "smooth",
+					});
+				});
+				break;
+			}
+			const ref = fieldRefs[key as keyof typeof fieldRefs];
 			window.requestAnimationFrame(() => {
 				const el = ref.current;
 				if (!el) return;
@@ -340,58 +378,120 @@ export default function ApplyPage() {
 		}
 	}
 
-	async function saveDraft() {
-		if (!user || !row || !isEditable) return;
-		setSaving(true);
-		setMessage(null);
-		setSaveNoticeError(null);
-		setSaveNotice("saving");
-		const resumeUrl = answers.resumeUrl?.trim() || undefined;
-		const headshotPath = answers.headshotPath?.trim() || undefined;
-		const payload = {
-			...answers,
-			resumeUrl,
-			headshotPath,
-		};
-		const { error } = await supabase
-			.from("applications")
-			.update({
-				answers: payload as unknown as Record<string, unknown>,
-				batch_id: batchId,
-			})
-			.eq("id", row.id)
-			.eq("user_id", user.id);
-		setSaving(false);
-		if (error) {
-			setSaveNotice("idle");
-			setSaveNoticeError(error.message);
-			setMessage(error.message);
-			pushToast(error.message, "error");
-			return;
-		}
-		setSaveNotice("saved");
-		scheduleSaveNoticeReset();
-		pushToast("Draft saved.", "success");
-		void load();
+	const persistDraft = useCallback(
+		async (mode: "manual" | "auto") => {
+			if (!user || !row || row.status !== "draft") return false;
+			const a = answersRef.current;
+			const b = batchIdRef.current;
+			const payload = buildAnswersPayload(a);
+			const snapshot = serializeDraftSnapshot(a, b);
+
+			setSaving(true);
+			if (mode === "manual") {
+				setMessage(null);
+				setSaveNoticeError(null);
+				setSaveNotice("saving");
+			}
+			const { error } = await supabase
+				.from("applications")
+				.update({
+					answers: payload as unknown as Record<string, unknown>,
+					batch_id: b,
+				})
+				.eq("id", row.id)
+				.eq("user_id", user.id);
+			setSaving(false);
+			if (error) {
+				lastSaveFailedRef.current = true;
+				if (mode === "manual") {
+					setSaveNotice("idle");
+					setSaveNoticeError(error.message);
+					setMessage(error.message);
+					pushToast(error.message, "error");
+				} else {
+					setSaveNoticeError(error.message);
+					pushToast("Couldn’t autosave — check your connection.", "error");
+				}
+				return false;
+			}
+			lastSaveFailedRef.current = false;
+			lastSyncedSnapshotRef.current = snapshot;
+			if (mode === "manual") {
+				setSaveNotice("saved");
+				scheduleSaveNoticeReset();
+				pushToast("Draft saved.", "success");
+				void load();
+			} else {
+				setSaveNoticeError(null);
+				setSaveNotice("saved");
+				scheduleSaveNoticeReset();
+			}
+			return true;
+		},
+		[user, row, pushToast, load, scheduleSaveNoticeReset],
+	);
+
+	function saveDraft() {
+		void persistDraft("manual");
 	}
 
-	function computeSubmitErrors(): Record<string, string> {
-		const next: Record<string, string> = {};
-		if (!answers.fullName.trim()) next.fullName = "Required";
-		if (!answers.headshotPath?.trim()) next.headshotPath = "Required";
-		if (!answers.major.trim()) next.major = "Required";
-		if (!answers.academicYear.trim()) next.academicYear = "Required";
-		if (!answers.whyMecg.trim()) next.whyMecg = "Required";
-		return next;
+	useEffect(() => {
+		if (!user || !row || row.status !== "draft" || loading) return;
+		if (saving || headshotUploading) return;
+		const snap = serializeDraftSnapshot(answers, batchId);
+		if (snap === lastSyncedSnapshotRef.current) return;
+
+		if (autosaveTimerRef.current != null)
+			window.clearTimeout(autosaveTimerRef.current);
+		autosaveTimerRef.current = window.setTimeout(() => {
+			autosaveTimerRef.current = null;
+			void persistDraft("auto");
+		}, AUTOSAVE_DEBOUNCE_MS);
+
+		return () => {
+			if (autosaveTimerRef.current != null) {
+				window.clearTimeout(autosaveTimerRef.current);
+				autosaveTimerRef.current = null;
+			}
+		};
+	}, [
+		answers,
+		batchId,
+		user,
+		row,
+		loading,
+		saving,
+		headshotUploading,
+		persistDraft,
+	]);
+
+	useEffect(() => {
+		const onBeforeUnload = (e: BeforeUnloadEvent) => {
+			if (!row || row.status !== "draft") return;
+			const snap = serializeDraftSnapshot(answers, batchId);
+			if (snap === lastSyncedSnapshotRef.current) return;
+			if (!lastSaveFailedRef.current) return;
+			e.preventDefault();
+			e.returnValue = "";
+		};
+		window.addEventListener("beforeunload", onBeforeUnload);
+		return () => window.removeEventListener("beforeunload", onBeforeUnload);
+	}, [row, answers, batchId]);
+
+	function announceHeadshotStatus(msg: string) {
+		setHeadshotUploadStatus(msg);
+		window.setTimeout(() => setHeadshotUploadStatus(""), 6000);
 	}
 
 	async function uploadHeadshotFile(file: File) {
 		if (!user) return;
 		if (!isApplicationHeadshotMime(file.type)) {
+			announceHeadshotStatus("Error: use JPEG, PNG, or WebP.");
 			pushToast("Use a JPEG, PNG, or WebP image.", "error");
 			return;
 		}
 		if (file.size > APPLICATION_HEADSHOT_MAX_BYTES) {
+			announceHeadshotStatus("Error: image must be 5 megabytes or smaller.");
 			pushToast("Image must be 5 MB or smaller.", "error");
 			return;
 		}
@@ -405,6 +505,7 @@ export default function ApplyPage() {
 		setHeadshotUploading(false);
 		if (error) {
 			revokeLocalHeadshotPreview();
+			announceHeadshotStatus(`Error: ${error.message}`);
 			pushToast(error.message, "error");
 			return;
 		}
@@ -416,6 +517,7 @@ export default function ApplyPage() {
 		revokeLocalHeadshotPreview();
 		setAnswers((a) => ({ ...a, headshotPath: path }));
 		setFieldErrors((f) => ({ ...f, headshotPath: "" }));
+		announceHeadshotStatus("Headshot uploaded successfully.");
 		pushToast("Headshot uploaded.", "success");
 	}
 
@@ -436,20 +538,30 @@ export default function ApplyPage() {
 			.remove([path]);
 		setHeadshotUploading(false);
 		if (error) {
+			announceHeadshotStatus(`Error: ${error.message}`);
 			pushToast(error.message, "error");
 			return;
 		}
 		revokeLocalHeadshotPreview();
 		setAnswers((a) => ({ ...a, headshotPath: "" }));
 		setRemoteHeadshotPreviewUrl(null);
+		announceHeadshotStatus("Headshot removed.");
 		pushToast("Headshot removed.", "success");
 	}
 
 	function openSubmitDialog() {
 		if (!user || !row || !isEditable) return;
-		const submitErrors = computeSubmitErrors();
+		setSubmitBlockMessage("");
+		const submitErrors = getApplicationSubmitFieldErrors(answers);
 		setFieldErrors(submitErrors);
-		if (Object.keys(submitErrors).length > 0) {
+		const keys = Object.keys(submitErrors);
+		if (keys.length > 0) {
+			const n = keys.length;
+			setSubmitBlockMessage(
+				n === 1
+					? "Fix the highlighted field before submitting."
+					: `Fix ${n} highlighted fields before submitting.`,
+			);
 			pushToast("Fill in all required fields before submitting.", "error");
 			focusFirstFieldError(submitErrors);
 			return;
@@ -463,18 +575,37 @@ export default function ApplyPage() {
 
 	async function performSubmit() {
 		if (!user || !row || !isEditable) return;
-		const submitErrors = computeSubmitErrors();
+		setSubmitBlockMessage("");
+		const submitErrors = getApplicationSubmitFieldErrors(answers);
 		if (Object.keys(submitErrors).length > 0) {
 			setFieldErrors(submitErrors);
+			const n = Object.keys(submitErrors).length;
+			setSubmitBlockMessage(
+				n === 1
+					? "Fix the highlighted field before submitting."
+					: `Fix ${n} highlighted fields before submitting.`,
+			);
 			pushToast("Fill in all required fields before submitting.", "error");
 			focusFirstFieldError(submitErrors);
 			return;
 		}
 		setSaving(true);
 		setMessage(null);
-		const resumeUrl = answers.resumeUrl?.trim() || undefined;
-		const headshotPath = answers.headshotPath?.trim() || undefined;
-		const payload = { ...answers, resumeUrl, headshotPath };
+		const payload = buildAnswersPayload(answers);
+
+		const { data: profileRow } = await supabase
+			.from("profiles")
+			.select("cohort")
+			.eq("id", user.id)
+			.maybeSingle();
+		const cohortAtSubmit =
+			profileRow &&
+			typeof profileRow === "object" &&
+			"cohort" in profileRow &&
+			typeof (profileRow as { cohort: unknown }).cohort === "string"
+				? (profileRow as { cohort: string }).cohort.trim() || null
+				: null;
+
 		const { error } = await supabase
 			.from("applications")
 			.update({
@@ -482,6 +613,7 @@ export default function ApplyPage() {
 				batch_id: batchId,
 				status: "submitted",
 				submitted_at: new Date().toISOString(),
+				cohort: cohortAtSubmit,
 			})
 			.eq("id", row.id)
 			.eq("user_id", user.id);
@@ -506,21 +638,34 @@ export default function ApplyPage() {
 
 	return (
 		<div className="space-y-10">
+			<div className="sr-only" aria-live="assertive" aria-atomic="true">
+				{submitBlockMessage}
+			</div>
 			<div className="max-w-3xl border-b border-border pb-8">
 				<h1 className="type-portal-title">Application</h1>
 				<p className="mt-2 text-sm font-sans font-light leading-relaxed text-muted">
-					Answer in steps — your draft saves on this device until you submit.
+					{isEditable ? (
+						<>
+							Answer in steps — your draft autosaves to your account shortly
+							after you stop typing. You can also tap{" "}
+							<span className="text-technical text-ink">Save draft</span>{" "}
+							anytime.
+						</>
+					) : (
+						<>Review your status and submitted answers below.</>
+					)}{" "}
 					Headshots stay private to reviewers.
 				</p>
-				<p className="text-technical mt-4 text-muted">
-					Status: <span className="text-ink">{status}</span>
-					{row?.submitted_at ? (
-						<span className="ml-2">
-							· Submitted {new Date(row.submitted_at).toLocaleString()}
-						</span>
-					) : null}
-				</p>
+				{isEditable ? (
+					<p className="text-technical mt-4 text-muted">
+						Status: <span className="text-ink">Draft</span> — not submitted yet
+					</p>
+				) : null}
 			</div>
+
+			{row && status !== "draft" ? (
+				<ApplicationStatusHub status={status} submittedAt={row.submitted_at} />
+			) : null}
 
 			{message ? (
 				<div className="space-y-1 border border-danger/50 px-4 py-2">
@@ -534,6 +679,8 @@ export default function ApplyPage() {
 
 			{!isEditable && row ? (
 				<div className="space-y-6">
+					{status === "accepted" ? <AcceptedOnboardingPanel /> : null}
+					{status === "rejected" ? <RejectedClosurePanel /> : null}
 					<div className="border border-border p-6 space-y-4">
 						<h2 className="text-technical text-muted">What you submitted</h2>
 						<dl className="grid gap-3 font-sans text-sm">
@@ -579,15 +726,6 @@ export default function ApplyPage() {
 								</div>
 							) : null}
 						</dl>
-					</div>
-					<div className="border border-success/40 bg-success-bg/30 p-6 space-y-2">
-						<h2 className="text-technical text-success">Next steps</h2>
-						<p className="text-muted font-sans text-sm leading-relaxed">
-							Your application is with the recruitment team. You’ll hear about
-							next rounds by email if you’re selected. Typical timeline:
-							interviews are scheduled after the application deadline listed on
-							the public site—watch your inbox (and spam).
-						</p>
 					</div>
 				</div>
 			) : null}
@@ -706,21 +844,42 @@ export default function ApplyPage() {
 										</span>
 									) : null}
 								</label>
-								<div className="space-y-3 rounded-lg border-2 border-dashed border-border bg-bg/40 p-4 sm:p-5">
-									<span
-										className="text-technical text-muted block"
+								<fieldset
+									className="space-y-3 rounded-lg border-2 border-dashed border-border bg-bg/40 p-4 sm:p-5 min-w-0"
+									aria-busy={headshotUploading}
+								>
+									<legend
+										className="text-technical text-muted block px-0"
 										id="application-headshot-label"
 									>
 										Headshot
 										<RequiredMark />
-									</span>
+									</legend>
 									<p
 										id="application-headshot-hint"
 										className="text-technical text-xs text-muted leading-relaxed"
 									>
 										Shoulders and up, clear lighting, no heavy filters—same kind
-										of photo you’d use on LinkedIn.
+										of photo you’d use on LinkedIn. Reviewers use this to
+										recognize you; it is not shown on the public site.
 									</p>
+									<ul
+										className="text-technical text-xs text-muted list-disc pl-5 space-y-0.5"
+										aria-label="Headshot requirements"
+									>
+										<li>JPEG, PNG, or WebP</li>
+										<li>Maximum file size {HEADSHOT_MAX_MB} MB</li>
+										<li>
+											Face visible, neutral or professional background preferred
+										</li>
+									</ul>
+									<div
+										className="sr-only"
+										aria-live="polite"
+										aria-atomic="true"
+									>
+										{headshotUploadStatus}
+									</div>
 									<input
 										ref={headshotInputRef}
 										type="file"
@@ -761,7 +920,11 @@ export default function ApplyPage() {
 											variant="secondary"
 											disabled={headshotUploading}
 											aria-invalid={!!fieldErrors.headshotPath}
-											aria-labelledby="application-headshot-label"
+											aria-label={
+												answers.headshotPath?.trim()
+													? "Replace application headshot photo"
+													: "Choose application headshot photo — required"
+											}
 											aria-describedby={
 												fieldErrors.headshotPath
 													? "application-headshot-error application-headshot-hint"
@@ -796,7 +959,7 @@ export default function ApplyPage() {
 											{fieldErrors.headshotPath}
 										</p>
 									) : null}
-								</div>
+								</fieldset>
 								<label className="block space-y-1" htmlFor="application-major">
 									<span className="text-technical text-muted">
 										Major
@@ -926,17 +1089,39 @@ export default function ApplyPage() {
 										Resume URL (optional)
 									</span>
 									<input
+										ref={resumeUrlRef}
 										id="application-resume-url"
 										type="url"
 										placeholder="https://…"
 										value={answers.resumeUrl ?? ""}
-										onChange={(e) =>
-											setAnswers((a) => ({ ...a, resumeUrl: e.target.value }))
+										aria-invalid={!!fieldErrors.resumeUrl}
+										aria-describedby={
+											fieldErrors.resumeUrl
+												? "application-resume-error application-resume-hint"
+												: "application-resume-hint"
 										}
-										aria-describedby="application-resume-hint"
+										onBlur={() => {
+											const msg = resumeUrlFieldError(answers.resumeUrl);
+											setFieldErrors((f) => ({ ...f, resumeUrl: msg }));
+										}}
+										onChange={(e) => {
+											setAnswers((a) => ({
+												...a,
+												resumeUrl: e.target.value,
+											}));
+											setFieldErrors((f) => ({ ...f, resumeUrl: "" }));
+										}}
 										className={`w-full bg-transparent border border-border px-3 py-2 min-h-11 font-sans ${PORTAL_FIELD_FOCUS}`}
 									/>
 								</label>
+								{fieldErrors.resumeUrl ? (
+									<span
+										id="application-resume-error"
+										className="text-xs text-danger"
+									>
+										{fieldErrors.resumeUrl}
+									</span>
+								) : null}
 								<p
 									id="application-resume-hint"
 									className="text-technical text-xs text-muted leading-relaxed"

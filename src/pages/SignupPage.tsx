@@ -4,6 +4,8 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/src/auth/AuthProvider";
+import { Seo } from "@/src/components/seo.tsx";
+import { trackFunnelStep } from "@/src/lib/analytics.ts";
 import { classifySignUpAuthError } from "@/src/lib/auth-errors";
 import { focusFormControl } from "@/src/lib/focus-form-control";
 
@@ -72,6 +74,7 @@ export default function SignupPage() {
 			});
 			return;
 		}
+		trackFunnelStep("signup_success");
 		if (session) {
 			navigate("/apply", { replace: true });
 			return;
@@ -82,6 +85,11 @@ export default function SignupPage() {
 	if (successPanel) {
 		return (
 			<div className="min-h-dvh-screen page-safe-insets flex flex-col items-center justify-center bg-bg text-ink">
+				<Seo
+					title="Check your email — MECG"
+					description="Confirm your MECG account from the link we emailed you."
+					pathname="/signup"
+				/>
 				<div className="w-full max-w-md space-y-6 rounded-lg border border-success/50 bg-success-bg/25 p-6 shadow-[var(--shadow-marketing-md)] sm:p-8">
 					<div className="flex items-center gap-3">
 						<span className="flex h-10 w-10 items-center justify-center rounded-full border border-success/60">
@@ -113,6 +121,11 @@ export default function SignupPage() {
 
 	return (
 		<div className="min-h-dvh-screen page-safe-insets flex flex-col items-center justify-center bg-bg text-ink">
+			<Seo
+				title="Create account — MECG"
+				description="Create a MECG account to apply. Default role is applicant; other roles are assigned by an admin."
+				pathname="/signup"
+			/>
 			<div className="w-full max-w-md space-y-6 rounded-lg border border-border-strong bg-surface/30 p-6 shadow-[var(--shadow-marketing-md)] sm:p-8">
 				<h1 className="type-auth-title">Create account</h1>
 				<p className="text-technical text-muted">

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 
 import { useAuth } from "@/src/auth/AuthProvider";
+import { Seo } from "@/src/components/seo.tsx";
 
 /** Shown when a signed-in user has no roles (edge case if trigger was skipped). */
 export default function PendingPage() {
@@ -9,6 +10,12 @@ export default function PendingPage() {
 	if (roles.length > 0) {
 		return (
 			<div className="min-h-dvh-screen page-safe-insets flex cursor-auto flex-col items-center justify-center bg-bg text-ink">
+				<Seo
+					title="Access — MECG"
+					description="MECG portal access."
+					pathname="/pending"
+					noindex
+				/>
 				<p className="text-technical text-muted mb-4">
 					You already have access.
 				</p>
@@ -21,6 +28,12 @@ export default function PendingPage() {
 
 	return (
 		<div className="mx-auto flex max-w-lg cursor-auto flex-col items-center justify-center space-y-6 bg-bg text-center text-ink min-h-dvh-screen page-safe-insets">
+			<Seo
+				title="Access pending — MECG"
+				description="Your MECG account is waiting for role assignment."
+				pathname="/pending"
+				noindex
+			/>
 			<h1 className="type-auth-title">Access pending</h1>
 			<p className="text-technical text-muted">
 				Your account has no roles yet. If you just signed up, ensure the

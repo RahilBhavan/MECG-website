@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 
 import { getPostLoginPath, hasRole, useAuth } from "@/src/auth/AuthProvider";
+import { PortalSeo } from "@/src/components/portal-seo.tsx";
 import type { AppRole } from "@/src/types/database";
 
 const STORAGE_HINT = "mecg.portalHint.dismissed.v1";
@@ -11,7 +12,13 @@ function roleDestinations(
 	roleList: AppRole[],
 ): { to: string; label: string }[] {
 	const items: { to: string; label: string }[] = [];
-	if (hasRole(roleList, "admin")) items.push({ to: "/admin", label: "Admin" });
+	if (hasRole(roleList, "admin")) {
+		items.push({ to: "/admin", label: "Admin" });
+		items.push({ to: "/admin/applications", label: "Applications" });
+		items.push({ to: "/admin/reviews", label: "Reviews" });
+		items.push({ to: "/admin/directory", label: "Directory" });
+		items.push({ to: "/admin/network-events", label: "Events" });
+	}
 	if (hasRole(roleList, "reviewer"))
 		items.push({ to: "/review", label: "Review" });
 	if (hasRole(roleList, "alumni"))
@@ -32,7 +39,7 @@ function portalHintText(roles: AppRole[]): string | null {
 		return "Turn on directory visibility in Network so other alumni can find you.";
 	}
 	if (hasRole(roles, "applicant")) {
-		return "Save your draft anytime; after submit you won’t be able to edit.";
+		return "Your application draft autosaves to your account; after submit you won’t be able to edit.";
 	}
 	return null;
 }
@@ -80,6 +87,7 @@ export default function AppShell() {
 
 	return (
 		<div className="min-h-screen bg-bg text-ink cursor-auto">
+			<PortalSeo />
 			<header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b border-border-strong bg-bg-raised/92 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))] shadow-[0_10px_36px_-20px_rgba(0,0,0,0.55)] backdrop-blur-md sm:px-6">
 				<div className="flex items-center gap-3 min-w-0 flex-1">
 					<Link
