@@ -50,3 +50,9 @@ jobs:
         run: bun run test:e2e
         env:
           CI: true
+          # Placeholder values, not real secrets. Without them the app renders
+          # "Configure VITE_SUPABASE_URL..." on /login and the sign-in heading
+          # test fails. Nothing here contacts a real backend: the credentialed
+          # tests in critical-paths.spec.ts skip when E2E_* vars are unset.
+          VITE_SUPABASE_URL: http://127.0.0.1:54321
+          VITE_SUPABASE_ANON_KEY: ci-placeholder-anon-key
