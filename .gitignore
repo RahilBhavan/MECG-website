@@ -16,3 +16,7 @@ playwright/.cache/
 MECG Headshot RAWs/
 MECG Full Membership Roster W26.xlsx
 .cursor/hooks/
+
+# Python bytecode
+__pycache__/
+*.pyc
