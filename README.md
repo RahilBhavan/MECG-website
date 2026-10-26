@@ -85,7 +85,7 @@ Supabase schema docs: [`docs/supabase/rls-and-routes.md`](docs/supabase/rls-and-
 ## shadcn-style UI
 
 - Primitives live under [`components/ui/`](components/ui/) with `cn()` in [`lib/utils.ts`](lib/utils.ts). Imports use the `@/` alias (repo root), e.g. `@/components/ui/button`.
-- Demo: [http://localhost:3000/balloons-demo](http://localhost:3000/balloons-demo) (`balloons-js` + Button).
+- Demo: `http://localhost:3000/balloons-demo` while the dev server runs (`balloons-js` + Button).
 - To add more shadcn components: `bunx shadcn@latest init` (choose Vite + Tailwind + `@/*` → `./*`), then `bunx shadcn@latest add …` so paths stay aligned with `components.json`.
 
 Part of [Rahil Bhavan's projects](https://github.com/RahilBhavan).
